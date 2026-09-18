@@ -38,17 +38,18 @@ RETAIL_SERIES = {"9": "liquor_store", "10": "beer_wine_store"}
 
 
 def classify(req):
+    """Scottsdale describes the PREMISES, so 'new Series 12 license for an existing location with a
+    new owner' is a new business moving into an existing space, i.e. a new venue. Only acquisitions
+    of control and license transfers are true ownership changes of a running business."""
     r = " ".join(req.split()).lower()
-    if "acquisition of control" in r or "agent" in r and "change" in r:
+    if "acquisition of control" in r or ("agent" in r and "change" in r):
         return "Acquisition of Control"
-    if "location transfer" in r or "new location" in r and "existing owner" in r:
-        return "Location Transfer"
-    if "new location and owner" in r or "new location and new owner" in r:
+    if "transfer" in r:
+        return "Location Transfer" if "location transfer" in r or "new location" in r else "Ownership Change"
+    if re.search(r"\bnew series\s+\d+", r) or "new location and owner" in r:
         return "New"
-    if "existing location with a new owner" in r or "new owner" in r:
+    if "new owner" in r:
         return "Ownership Change"
-    if "new series" in r:
-        return "New Series"
     return "Other"
 
 

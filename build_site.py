@@ -61,9 +61,104 @@ ul{{list-style:none;padding:0}} li{{padding:.7rem 0;border-bottom:1px solid var(
 <p><a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Free weekly roundup</a> for locals · <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert, $29/month</a> for POS reps, distributors, insurers, linen, payroll and anyone else who sells to new restaurants. Data licensing for platforms and multi-market teams: hello@liquorlicenseleads.com.</p>
 <p class="muted">Sources: <a href="https://www.phoenix.gov/administration/departments/cityclerk/programs-services/license-services/new-applications.html">City of Phoenix, Newly Received Liquor License Applications</a> · <a href="https://ww2.scottsdaleaz.gov/council/meeting-information/agendas-minutes">Scottsdale City Council agendas</a> · <a href="https://mesa.legistar.com/Legislation.aspx">Mesa City Council (Legistar)</a>. Public records under A.R.S. Title 4.</p>
 </body></html>"""
-(ROOT / "site").mkdir(exist_ok=True)
-(ROOT / "site" / "index.html").write_text(html)
+(ROOT / "site" / "phoenix").mkdir(parents=True, exist_ok=True)
+html = html.replace('<meta name="viewport"', '<link rel="canonical" href="https://liquorlicenseleads.com/phoenix/">\n<meta name="viewport"')
+html = html.replace('<h1>New restaurants', '<p class="muted"><a href="/">liquorlicenseleads.com</a> \u00b7 Phoenix edition</p>\n<h1>New restaurants')
+(ROOT / "site" / "phoenix" / "index.html").write_text(html)
 print(f"site built: {len(venues)} new venues, {len(transfers)} transfers, {len(retail)} retail")
+
+
+# ---------------------------------------------------------------------------
+# Landing page (site/index.html): sells the Vendor Alert. Sample leads are real,
+# recent, and partially redacted.
+# ---------------------------------------------------------------------------
+def _redact_phone(p):
+    d = "".join(ch for ch in (p or "") if ch.isdigit())
+    return f"({d[:3]}) {d[3:6]}-\u2022\u2022\u2022\u2022" if len(d) >= 10 else ""
+
+def _redact_email(e):
+    if not e or "@" not in e: return ""
+    u, dom = e.split("@", 1); return u[:2] + "\u2022\u2022\u2022\u2022@" + dom
+
+_recent = sorted([v for v in _all_active if v["is_new_venue"] and v["category"] in ("restaurant", "bar", "beer_wine_bar", "microbrewery")], key=lambda v: v.get("first_seen", ""), reverse=True)
+_samples = [v for v in _recent if v.get("phone") or v.get("agent") or v.get("email")][:3] or _recent[:3]
+_week_new = len([v for v in _all_active if v["is_new_venue"] and (v.get("first_seen") or "")[:10] > _cutoff])
+_week_own = len([v for v in _all_active if not v["is_new_venue"] and v["category"] not in ("beer_wine_store", "liquor_store", "other") and (v.get("first_seen") or "")[:10] > _cutoff])
+
+def _sample_card(v):
+    bits = [f'<span class="tag">{LABEL.get(v["category"], "Venue")}</span><span class="tag">{escape(v.get("city", ""))}</span>']
+    line2 = [escape(v.get("address", ""))]
+    if v.get("agent"): line2.append(f'applicant <b>{escape(v["agent"])}</b>')
+    if v.get("phone"): line2.append(_redact_phone(v["phone"]))
+    if v.get("email"): line2.append(_redact_email(v["email"]))
+    return f'<div class="lead"><div><strong>{escape(v["name"])}</strong> {" ".join(bits)}</div><div class="muted">{" \u00b7 ".join(x for x in line2 if x)}</div><div class="muted small">Filed {escape((v.get("first_seen") or "")[:10])} \u00b7 usually opens 30\u201390 days later</div></div>'
+
+landing_html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Liquor License Leads \u2014 New restaurants and bars before they open (Phoenix, Scottsdale, Mesa)</title>
+<meta name="description" content="Every new restaurant and bar liquor-license filing in the Phoenix metro, emailed to you each weekday morning with the applicant's name, phone and email. $29/month.">
+<link rel="canonical" href="https://liquorlicenseleads.com/">
+<style>
+:root{{--bg:#f4f1ec;--card:#fff;--fg:#1f2a2c;--muted:#6b7a7c;--line:#e2ddd5;--acc:#2e6f73;--acc2:#c7813f;--tag:#eef3f2}}
+*{{box-sizing:border-box}} body{{margin:0;font:17px/1.55 system-ui,-apple-system,Segoe UI,Roboto,sans-serif;background:var(--bg);color:var(--fg)}}
+.wrap{{max-width:900px;margin:0 auto;padding:32px 20px}} a{{color:var(--acc)}}
+header{{display:flex;justify-content:space-between;align-items:center;gap:16px;margin-bottom:40px}}
+.logo{{font-weight:800;letter-spacing:-.02em;font-size:1.15rem;color:var(--fg);text-decoration:none}}
+.btn{{display:inline-block;background:var(--acc2);color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}}
+.btn.alt{{background:var(--acc)}}
+h1{{font-size:2.4rem;line-height:1.1;letter-spacing:-.02em;margin:0 0 14px}} h2{{font-size:1.4rem;margin:48px 0 14px}}
+.sub{{font-size:1.15rem;color:var(--muted);max-width:640px}}
+.lead{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}}
+.tag{{font-size:.72rem;background:var(--tag);padding:2px 8px;border-radius:99px;margin-left:6px;color:var(--acc)}}
+.muted{{color:var(--muted)}} .small{{font-size:.85rem}}
+.grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}}
+.card{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}}
+.price{{font-size:2.2rem;font-weight:800}} ul{{padding-left:20px}} li{{margin:6px 0}}
+.stat{{font-size:2rem;font-weight:800;color:var(--acc)}}
+footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
+@media(max-width:600px){{h1{{font-size:1.9rem}}}}
+</style></head><body><div class="wrap">
+<header><a class="logo" href="/">Liquor License Leads</a><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get the daily alert \u2192</a></header>
+
+<h1>Know about every new restaurant and bar in the Valley 30\u201390 days before it opens.</h1>
+<p class="sub">Every weekday morning: each new liquor-license filing in Phoenix, Scottsdale and Mesa, with the applicant's name, phone and email pulled from the public record. Built for the people who sell to restaurants.</p>
+<p><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Start for $29/month \u2192</a> &nbsp; <span class="muted small">Cancel anytime. Reply to any email and a person answers.</span></p>
+
+<div class="grid" style="margin-top:32px">
+<div class="card"><div class="stat">{len(venues) + _week_new}</div><div class="muted">restaurants &amp; bars pending right now</div></div>
+<div class="card"><div class="stat">{_week_new}</div><div class="muted">new filings in the last 7 days</div></div>
+<div class="card"><div class="stat">{_week_own}</div><div class="muted">ownership changes this week</div></div>
+</div>
+
+<h2>What a lead looks like</h2>
+<p class="muted">Real filings from this week. Subscribers see the full contact details.</p>
+{"".join(_sample_card(v) for v in _samples)}
+
+<h2>Who this is for</h2>
+<div class="grid">
+<div class="card"><b>POS &amp; payments</b><br><span class="muted">Toast, Square, Clover, merchant services</span></div>
+<div class="card"><b>Distribution</b><br><span class="muted">Food, beer &amp; wine, spirits, coffee, produce</span></div>
+<div class="card"><b>Build-out &amp; services</b><br><span class="muted">Insurance, linen, hood cleaning, pest, refrigeration, signage, payroll</span></div>
+<div class="card"><b>Money &amp; advice</b><br><span class="muted">SBA lenders, CPAs, license consultants, brokers</span></div>
+</div>
+
+<h2>Why the filing date matters</h2>
+<p>A restaurant applies for its liquor license months before the sign goes up. That's when the owner is choosing a POS system, signing with a distributor, buying insurance and lining up every other vendor. By the time it's on Instagram, those contracts are signed. Subscribers call first.</p>
+
+<h2>Pricing</h2>
+<div class="grid">
+<div class="card"><div class="price">$29<span class="muted small">/mo</span></div><b>Vendor Alert</b><ul><li>Every weekday morning</li><li>Phoenix, Scottsdale &amp; Mesa (more cities coming)</li><li>Address, applicant, phone, email, link to the record</li><li>Ownership changes flagged</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></div>
+<div class="card"><div class="price">Free</div><b>Thursday roundup</b><ul><li>This week's new venues, names and cities</li><li>For locals who want to know what's coming</li></ul><a class="btn alt" href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free \u2192</a></div>
+<div class="card"><div class="price">Teams</div><b>Data licensing</b><ul><li>Multi-market, CSV/API delivery</li><li>Regional and national sales teams</li></ul><a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a></div>
+</div>
+
+<h2>Where the data comes from</h2>
+<p class="muted">City of Phoenix liquor license applications, Scottsdale City Council agendas and Mesa City Council filings, read every morning. Contact details come from the Arizona Department of Liquor Licenses and Control report attached to each application. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">Phoenix board</a> (7-day delay).</p>
+
+<footer>Liquor License Leads \u00b7 Phoenix, AZ \u00b7 <a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a> \u00b7 Not affiliated with any city or the State of Arizona.</footer>
+</div></body></html>"""
+(ROOT / "site" / "index.html").write_text(landing_html)
+print("landing built")
 
 
 # ---------------------------------------------------------------------------
@@ -86,7 +181,7 @@ def _rows(recs, paid):
 
 CAT_LABEL = {"restaurant": "Restaurant", "bar": "Bar", "beer_wine_bar": "Beer &amp; wine bar", "hotel": "Hotel",
              "microbrewery": "Brewery", "tasting_room": "Tasting room", "private_club": "Private club"}
-SITE_URL = "https://calvinmalloy124.github.io/phx-opening-soon/"
+SITE_URL = "https://liquorlicenseleads.com/"
 UPGRADE_URL = "https://phxopeningsoon.beehiiv.com/upgrade"
 
 def _feed(path, title, items):

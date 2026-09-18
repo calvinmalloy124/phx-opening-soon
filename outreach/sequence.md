@@ -15,7 +15,7 @@ Three restaurants filed for liquor licenses in the Valley this week. They open i
 
 I run a daily alert that sends every new filing the morning it appears: address, applicant's name, phone and email from the public record, plus ownership changes at existing restaurants. It's built for {category} reps who want to be the first call.
 
-$29/month, cancel anytime, and the first email is the full 45-day board. Details: liquorlicenseleads.com
+Try it: $29/month, cancel anytime, and your first email is the full 45-day board with contacts. There's also a free Thursday roundup (names and cities only) if you just want to see what's coming. Both at liquorlicenseleads.com.
 
 If you're not the right person at {company}, who is?
 

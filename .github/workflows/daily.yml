@@ -20,6 +20,7 @@ jobs:
       - run: python enrich.py
         env:
           BRAVE_KEY: ${{ secrets.BRAVE_KEY }}
+          DUMP_OCR: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
       - run: python build_site.py
       - name: Commit data
         run: |

@@ -123,6 +123,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 <h1>Know about every new restaurant and bar in the Valley 30\u201390 days before it opens.</h1>
 <p class="sub">Every weekday morning: each new liquor-license filing in Phoenix, Scottsdale and Mesa, with the applicant's name, phone and email pulled from the public record. Built for the people who sell to restaurants.</p>
 <p><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Start for $29/month \u2192</a> &nbsp; <span class="muted small">Cancel anytime. Reply to any email and a person answers.</span></p>
+<p class="muted"><b>Day one isn't empty.</b> Your first email is the entire current board: every active filing from the last 45 days ({len(venues) + _week_new} venues and {len(transfers) + _week_own} ownership changes right now) with full contact details, so you can work last month's openings too.</p>
 
 <div class="grid" style="margin-top:32px">
 <div class="card"><div class="stat">{len(venues) + _week_new}</div><div class="muted">restaurants &amp; bars pending right now</div></div>
@@ -147,7 +148,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 
 <h2>Pricing</h2>
 <div class="grid">
-<div class="card"><div class="price">$29<span class="muted small">/mo</span></div><b>Vendor Alert</b><ul><li>Every weekday morning</li><li>Phoenix, Scottsdale &amp; Mesa (more cities coming)</li><li>Address, applicant, phone, email, link to the record</li><li>Ownership changes flagged</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></div>
+<div class="card"><div class="price">$29<span class="muted small">/mo</span></div><b>Vendor Alert</b><ul><li>Every weekday morning</li><li>Phoenix, Scottsdale &amp; Mesa (more cities coming)</li><li>Address, applicant, phone, email, link to the record</li><li>Ownership changes flagged</li><li>Full 45-day backlog on day one</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></div>
 <div class="card"><div class="price">Free</div><b>Thursday roundup</b><ul><li>This week's new venues, names and cities</li><li>For locals who want to know what's coming</li></ul><a class="btn alt" href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free \u2192</a></div>
 <div class="card"><div class="price">Teams</div><b>Data licensing</b><ul><li>Multi-market, CSV/API delivery</li><li>Regional and national sales teams</li></ul><a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a></div>
 </div>

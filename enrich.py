@@ -1,0 +1,87 @@
+"""
+Enrich active filings with public contact signals. Cached in data/enrich.json (one lookup per record).
+- Phoenix: parse the application PDF for applicant/agent name and phone.
+- All: DuckDuckGo HTML search for the venue's Instagram and website.
+Fields added to filings: agent (if missing), phone, instagram, website.
+"""
+import io, json, re, time, html
+from pathlib import Path
+import requests
+
+ROOT = Path(__file__).parent
+FIL = ROOT / "data" / "filings.json"; CACHE = ROOT / "data" / "enrich.json"
+H = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
+PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
+SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "ubereats.", "grubhub.", "opentable.", "google.", "mapquest.", "phoenix.gov", "scottsdaleaz.gov", "legistar.", "azliquor", "restaurantji", "menupix", "zomato", "foursquare", "loopnet", "crexi", "bizbuysell", "linkedin.")
+MAX_PER_RUN = 40
+
+
+def phoenix_pdf(url):
+    try:
+        from pypdf import PdfReader
+        b = requests.get(url, headers=H, timeout=60).content
+        txt = "\n".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(b)).pages[:3])
+    except Exception:
+        return {}
+    out = {}
+    m = PHONE.search(txt)
+    if m: out["phone"] = m.group(0)
+    for pat in [r"(?:Agent|Applicant|Owner)[^\n:]{0,25}[:\-]\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})",
+                r"Name of Applicant[^\n]*\n\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})"]:
+        m = re.search(pat, txt)
+        if m: out["agent"] = m.group(1).strip(); break
+    return out
+
+
+def ddg(q):
+    try:
+        r = requests.post("https://html.duckduckgo.com/html/", data={"q": q}, headers=H, timeout=30)
+        return re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', r.text)
+    except Exception:
+        return []
+
+
+def clean(u):
+    m = re.search(r"uddg=([^&]+)", u)
+    return requests.utils.unquote(m.group(1)) if m else u
+
+
+def socials(name, city):
+    out = {}
+    for u in ddg(f'"{name}" {city} instagram')[:8]:
+        u = clean(u)
+        if "instagram.com/" in u and "/p/" not in u and "/reel/" not in u and "/explore/" not in u:
+            out["instagram"] = u.split("?")[0]; break
+    time.sleep(2)
+    for u in ddg(f'"{name}" {city} restaurant')[:8]:
+        u = clean(u)
+        if u.startswith("http") and not any(s in u for s in SKIP):
+            out["website"] = u.split("?")[0]; break
+    time.sleep(2)
+    return out
+
+
+def main():
+    filings = json.loads(FIL.read_text()) if FIL.exists() else {}
+    cache = json.loads(CACHE.read_text()) if CACHE.exists() else {}
+    todo = [k for k, v in filings.items() if v.get("active") and k not in cache and v.get("category") not in ("beer_wine_store", "liquor_store", "other")]
+    done = 0
+    for k in todo[:MAX_PER_RUN]:
+        v = filings[k]; e = {}
+        if v.get("city") == "Phoenix" and v.get("pdf_application"):
+            e.update(phoenix_pdf(v["pdf_application"]))
+        e.update(socials(v["name"], v.get("city", "Phoenix")))
+        cache[k] = e; done += 1
+    # merge cached fields into filings (never overwrite a non-empty agent)
+    for k, e in cache.items():
+        if k in filings:
+            for f, val in e.items():
+                if f == "agent" and filings[k].get("agent"): continue
+                if val: filings[k][f] = val
+    CACHE.write_text(json.dumps(cache, indent=1))
+    FIL.write_text(json.dumps(filings, indent=1))
+    print(f"enriched {done} new, {len(todo) - done} remaining, cache {len(cache)}")
+
+
+if __name__ == "__main__":
+    main()

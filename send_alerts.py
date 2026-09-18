@@ -1,6 +1,6 @@
 """
-Send the free weekly roundup and the paid daily Vendor Alert.
-Subscribers come from beehiiv (read API works on Scale); delivery goes through Resend.
+Send the free weekly roundup and the paid daily Vendor Alert through Resend,
+using beehiiv only as the subscriber list of record (read via API).
 
 Env: BEEHIIV_API_KEY, BEEHIIV_PUB_ID, RESEND_KEY
 Usage: python send_alerts.py weekly | daily
@@ -9,93 +9,96 @@ import json, os, sys, time
 from datetime import date
 import requests
 
-BH_KEY = os.environ["BEEHIIV_API_KEY"]; PUB = os.environ["BEEHIIV_PUB_ID"]; RS_KEY = os.environ["RESEND_KEY"]
-FROM = "PHX Opening Soon <alerts@liquorlicenseleads.com>"
-REPLY = "hello@liquorlicenseleads.com"
+BKEY = os.environ["BEEHIIV_API_KEY"]; PUB = os.environ["BEEHIIV_PUB_ID"]; RKEY = os.environ["RESEND_KEY"]
+FROM_FREE = "PHX Opening Soon <alerts@liquorlicenseleads.com>"
+FROM_PAID = "Vendor Alert <alerts@liquorlicenseleads.com>"
+REPLY_TO = "hello@liquorlicenseleads.com"
 SITE = "https://liquorlicenseleads.com/"
 UPGRADE = "https://phxopeningsoon.beehiiv.com/upgrade"
-MANAGE = "https://phxopeningsoon.beehiiv.com/subscribe"   # beehiiv hosts unsubscribe/manage
-CAT = {"restaurant": "Restaurant", "bar": "Bar", "beer_wine_bar": "Beer & wine bar", "hotel": "Hotel",
-       "microbrewery": "Brewery", "tasting_room": "Tasting room", "private_club": "Private club"}
+MANAGE = "https://phxopeningsoon.beehiiv.com/subscribe"   # beehiiv handles unsubscribe/manage
+CAT = {"restaurant": "Restaurant", "bar": "Bar", "beer_wine_bar": "Beer & wine bar", "hotel": "Hotel", "microbrewery": "Brewery", "tasting_room": "Tasting room", "private_club": "Private club"}
 
 
-def subscribers():
-    """All active subscribers with their tier (free / premium)."""
-    out, cursor = [], None
+def subscribers(premium_only):
+    """Active beehiiv subscribers; premium tier only if premium_only."""
+    out, page = [], 1
     while True:
-        params = {"limit": 100, "status": "active", "expand[]": "stats"}
-        if cursor: params["cursor"] = cursor
-        r = requests.get(f"https://api.beehiiv.com/v2/publications/{PUB}/subscriptions", params=params,
-                         headers={"Authorization": f"Bearer {BH_KEY}"}, timeout=60)
+        r = requests.get(f"https://api.beehiiv.com/v2/publications/{PUB}/subscriptions",
+                         params={"status": "active", "limit": 100, "page": page, "expand[]": "stats"},
+                         headers={"Authorization": f"Bearer {BKEY}"}, timeout=60)
         r.raise_for_status(); j = r.json()
         for s in j.get("data", []):
-            out.append({"email": s["email"], "premium": s.get("subscription_tier") == "premium", "id": s.get("id", "")})
-        cursor = j.get("next_cursor")
-        if not cursor: break
+            tier = (s.get("subscription_tier") or "free").lower()
+            if premium_only and tier == "free": continue
+            out.append(s["email"])
+        if page >= j.get("total_pages", 1): break
+        page += 1
     return out
-
-
-def esc(s): return (s or "").replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
 
 
 def rows(recs, paid):
     out = []
     for r in sorted(recs, key=lambda x: (x.get("city", ""), x.get("name", ""))):
-        line = f"<li style='margin:0 0 10px'><b>{esc(r['name'])}</b> &mdash; {CAT.get(r.get('category'), 'Venue')} &middot; {esc(r.get('address',''))} &middot; {esc(r.get('city',''))}"
+        kind = CAT.get(r.get('category'), 'Venue')
+        if not r.get("is_new_venue"): kind += " · ownership change"
+        line = f"<li><b>{r['name']}</b> — {kind} · {r.get('city','')}"
         if paid:
-            if r.get("agent"): line += f" &middot; <b>agent: {esc(r['agent'])}</b>"
-            if r.get("pdf_application"): line += f" &middot; <a href='{esc(r['pdf_application'])}'>record</a>"
+            if r.get("address"): line += f" · {r['address']}"
+            if r.get("agent"): line += f" · <b>applicant/agent: {r['agent']}</b>"
+            if r.get("phone"): line += f" · {r['phone']}"
+            if r.get("instagram"): line += f" · <a href='{r['instagram']}'>Instagram</a>"
+            if r.get("website"): line += f" · <a href='{r['website']}'>site</a>"
+            if r.get("pdf_application"): line += f" · <a href='{r['pdf_application']}'>record</a>"
         out.append(line + "</li>")
-    return "".join(out)
-
-
-def wrap(title, inner, footer):
-    return f"""<div style="font:15px/1.5 -apple-system,Segoe UI,Arial,sans-serif;color:#1a1a1a;max-width:640px;margin:0 auto;padding:24px">
-<h1 style="font-size:20px;margin:0 0 16px">{esc(title)}</h1>{inner}
-<p style="color:#666;font-size:13px;margin-top:28px">{footer}</p></div>"""
+    return "\n".join(out)
 
 
 def build(kind):
+    from datetime import timedelta
     f = json.load(open("data/filings.json"))
-    venues = [v for v in f.values() if v.get("active") and v.get("is_new_venue")]
     today = date.today()
+    week_ago = (today - timedelta(days=7)).isoformat()
+    active = [v for v in f.values() if v.get("active")]
+    venues = [v for v in active if v.get("is_new_venue") and (v.get("first_seen") or "")[:10] >= week_ago]
+    owner_changes = [v for v in active if not v.get("is_new_venue") and v.get("category") not in ("beer_wine_store", "liquor_store", "other")]
+    owner_week = [v for v in owner_changes if (v.get("first_seen") or "")[:10] >= week_ago]
+    foot = f"<p style='color:#888;font-size:12px'>You're getting this because you subscribed at phxopeningsoon.beehiiv.com. <a href='{MANAGE}'>Manage or unsubscribe</a>. PHX Opening Soon · Phoenix, AZ</p>"
     if kind == "daily":
-        new = [r for r in (json.load(open("data/new.json")) if os.path.exists("data/new.json") else []) if r.get("is_new_venue")]
-        if not new: return None, None, None
-        title = f"{len(new)} new venue filings — {today:%a %b %d}"
-        inner = f"<p>New restaurant/bar liquor-license filings found this morning in Phoenix, Scottsdale and Mesa.</p><ul style='padding-left:18px'>{rows(new, True)}</ul><p>Full board: <a href='{SITE}'>{SITE}</a></p>"
-        footer = f"You're receiving the Vendor Alert because you subscribed. Reply to this email with questions. <a href='{MANAGE}'>Manage or cancel</a>."
-        return title, wrap(title, inner, footer), "premium"
+        newf = json.load(open("data/new.json")) if os.path.exists("data/new.json") else []
+        new_v = [r for r in newf if r.get("is_new_venue")]
+        new_o = [r for r in newf if not r.get("is_new_venue") and r.get("category") not in ("beer_wine_store", "liquor_store", "other")]
+        if not new_v and not new_o: return None
+        subj = f"{len(new_v)} new venue{'s' if len(new_v)!=1 else ''}" + (f", {len(new_o)} ownership change{'s' if len(new_o)!=1 else ''}" if new_o else "") + f" — {today:%b %d}"
+        html = f"<p>Liquor-license filings found this morning in Phoenix, Scottsdale and Mesa.</p>"
+        if new_v: html += f"<h3>New venues ({len(new_v)})</h3><ul>{rows(new_v, True)}</ul>"
+        if new_o: html += f"<h3>Ownership changes ({len(new_o)})</h3><p style='color:#666'>New owners re-bid every vendor contract.</p><ul>{rows(new_o, True)}</ul>"
+        html += f"<p>Reply to this email if a lead was wrong or you want a city added.</p>{foot}"
+        return subj, html, FROM_PAID, True
     by_city = {}
     for r in venues: by_city.setdefault(r.get("city", "Other"), []).append(r)
-    title = f"{len(venues)} restaurants and bars opening soon in the Valley"
-    inner = "<p>Every restaurant, bar and coffee shop that filed for a liquor license in the last few weeks. They usually open 30–90 days after filing.</p>"
-    for city, rs in sorted(by_city.items()):
-        inner += f"<h3 style='font-size:16px;margin:20px 0 8px'>{esc(city)} ({len(rs)})</h3><ul style='padding-left:18px'>{rows(rs, False)}</ul>"
-    inner += f"<p style='border:1px solid #e5e5e5;border-radius:8px;padding:12px'><b>Sell to restaurants?</b> The <a href='{UPGRADE}'>Vendor Alert</a> sends these every weekday morning with the applicant's agent name, for $29/month.</p><p>Live board: <a href='{SITE}'>{SITE}</a></p>"
-    footer = f"You subscribed at phxopeningsoon.beehiiv.com. <a href='{MANAGE}'>Unsubscribe or manage</a>."
-    return title, wrap(title, inner, footer), "all"
+    subj = f"{len(venues)} new restaurants and bars filed this week in the Valley"
+    teaser = f"<p style='border:1px solid #ddd;padding:10px;border-radius:6px'><b>Sell to restaurants?</b> Vendor Alert subscribers got each of these the morning it filed, with the address, the applicant's name, and the record" + (f", plus <b>{len(owner_week)} ownership change{'s' if len(owner_week)!=1 else ''}</b> at existing venues this week" if owner_week else "") + f". <a href='{UPGRADE}'>$29/month, cancel anytime →</a></p>"
+    html = teaser + "<p>Restaurants, bars and coffee shops that filed for a liquor license this week. They usually open 30–90 days after filing.</p>"
+    for city, rs in sorted(by_city.items()): html += f"<h3>{city} ({len(rs)})</h3><ul>{rows(rs, False)}</ul>"
+    html += f"<p>Full board (7-day delay): <a href='{SITE}'>{SITE}</a></p>{foot}"
+    return subj, html, FROM_FREE, False
 
 
-def send(to, subject, html):
-    r = requests.post("https://api.resend.com/emails", headers={"Authorization": f"Bearer {RS_KEY}", "Content-Type": "application/json"},
-                      json={"from": FROM, "to": [to], "reply_to": REPLY, "subject": subject, "html": html}, timeout=60)
-    ok = r.status_code in (200, 201)
-    if not ok: print("  FAIL", to, r.status_code, r.text[:200])
-    return ok
+def send(subj, html, sender, to):
+    # Resend batch endpoint: up to 100 messages per call
+    for i in range(0, len(to), 100):
+        batch = [{"from": sender, "to": [e], "reply_to": REPLY_TO, "subject": subj, "html": html} for e in to[i:i+100]]
+        r = requests.post("https://api.resend.com/emails/batch", headers={"Authorization": f"Bearer {RKEY}", "Content-Type": "application/json"}, json=batch, timeout=60)
+        print(r.status_code, r.text[:200]); r.raise_for_status(); time.sleep(1)
 
 
 if __name__ == "__main__":
     kind = sys.argv[1] if len(sys.argv) > 1 else "weekly"
-    subject, html, audience = build(kind)
-    if not subject: print("nothing new; no daily send"); sys.exit(0)
-    subs = subscribers()
-    targets = [s["email"] for s in subs if audience == "all" or s["premium"]]
-    print(f"{kind}: {len(subs)} subscribers, sending to {len(targets)}")
-    sent = 0
-    for t in targets:
-        if send(t, subject, html): sent += 1
-        time.sleep(0.6)  # stay under Resend's rate limit
-    print(f"sent {sent}/{len(targets)}")
-    with open("data/send_log.jsonl", "a") as fh:
-        fh.write(json.dumps({"ts": date.today().isoformat(), "kind": kind, "targets": len(targets), "sent": sent, "subject": subject}) + "\n")
+    b = build(kind)
+    if b is None: print("no new venues today; nothing sent"); sys.exit(0)
+    subj, html, sender, premium = b
+    test_to = os.environ.get("TEST_TO", "").strip()
+    to = [test_to] if test_to else subscribers(premium_only=premium)
+    print(f"{kind}: {len(to)} recipients" + (" (TEST MODE)" if test_to else ""))
+    if not to: sys.exit(0)
+    send(subj, html, sender, to)

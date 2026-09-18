@@ -46,6 +46,7 @@ def rows(recs, paid):
             if r.get("address"): line += f" · {r['address']}"
             if r.get("agent"): line += f" · <b>applicant/agent: {r['agent']}</b>"
             if r.get("phone"): line += f" · {r['phone']}"
+            if r.get("email"): line += f" · {r['email']}"
             if r.get("instagram"): line += f" · <a href='{r['instagram']}'>Instagram</a>"
             if r.get("website"): line += f" · <a href='{r['website']}'>site</a>"
             if r.get("pdf_application"): line += f" · <a href='{r['pdf_application']}'>record</a>"

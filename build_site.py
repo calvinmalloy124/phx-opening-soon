@@ -6,7 +6,11 @@ from html import escape
 
 ROOT = Path(__file__).parent
 filings = json.loads((ROOT / "data" / "filings.json").read_text()) if (ROOT / "data" / "filings.json").exists() else {}
-active = [v for v in filings.values() if v.get("active")]
+from datetime import date as _date, timedelta as _td
+_cutoff = (datetime.now(timezone.utc).date() - _td(days=7)).isoformat()
+_all_active = [v for v in filings.values() if v.get("active")]
+active = [v for v in _all_active if (v.get("first_seen") or "")[:10] <= _cutoff]
+held_back = len([v for v in _all_active if v["is_new_venue"] and (v.get("first_seen") or "")[:10] > _cutoff])
 CITIES = ["Phoenix", "Scottsdale", "Mesa"]
 venues = sorted([v for v in active if v["is_new_venue"]], key=lambda v: v.get("first_seen", ""), reverse=True)
 transfers = sorted([v for v in active if not v["is_new_venue"] and v["category"] not in ("beer_wine_store", "liquor_store", "other")], key=lambda v: v["name"])
@@ -21,13 +25,13 @@ LABEL = {"restaurant": "Restaurant", "bar": "Bar", "beer_wine_bar": "Beer & wine
 def row(v):
     lbl = "application" if v.get("city") == "Phoenix" else ("council file" if v.get("city") == "Mesa" else "council agenda")
     pdf = f' · <a href="{escape(v["pdf_application"])}">{lbl}</a>' if v.get("pdf_application") else ""
-    where = f'{escape(v["address"])}, {escape(v.get("city", "Phoenix"))}'
+    where = escape(v.get("city", "Phoenix"))
     if v.get("district"):
         where += f' · District {v["district"]}'
     when = escape(v["comment_deadline"].replace(" 5:00 PM", ""))
     when = ("comment period ends " + when) if v.get("city") == "Phoenix" else when
     return (f'<li><strong>{escape(v["name"])}</strong> <span class="tag">{LABEL.get(v["category"], v["category"])}</span>'
-            f'<span class="tag">{escape(v.get("city", "Phoenix"))}</span><br>{where} · {escape(v["type"])} · {when}{pdf}</li>')
+            f'<span class="tag">{escape(v.get("city", "Phoenix"))}</span><br>{where} · {escape(v["type"])} · {when}</li>')
 
 
 html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
@@ -48,12 +52,13 @@ ul{{list-style:none;padding:0}} li{{padding:.7rem 0;border-bottom:1px solid var(
 <p class="muted">Sourced daily from City of Phoenix liquor license filings, Scottsdale City Council agendas and Mesa City Council filings. A "New" application usually means a venue 1–6 months from opening. Updated {updated}. Not affiliated with the City of Phoenix.</p>
 <div class="cta"><strong>Want this every Thursday?</strong> Free weekly email of every restaurant and bar about to open in the Valley. <a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free →</a></div>
 <div class="cta"><strong>Sell to restaurants and bars?</strong> The <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert</a> emails you every new filing each weekday morning with the applicant's agent name and a link to the record, weeks before the doors open. $29/month, cancel anytime.</div>
-<h2>{len(venues)} new venues pending</h2><ul>{''.join(row(v) for v in venues) or '<li class="muted">None currently listed.</li>'}</ul>
+<h2>{len(venues)} new venues pending</h2>
+{f'<p class="cta"><strong>{held_back} more filed in the last 7 days.</strong> Vendor Alert subscribers already have them, with the address, the applicant and a link to the record. <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get the daily alert →</a></p>' if held_back else ''}<ul>{''.join(row(v) for v in venues) or '<li class="muted">None currently listed.</li>'}</ul>
 <p class="muted">By city: {' · '.join(f"{c} {sum(1 for v in venues if v.get('city')==c)}" for c in CITIES)}</p>
-<h2>Ownership changes at existing venues ({len(transfers)})</h2><ul>{''.join(row(v) for v in transfers)}</ul>
+<h2>Ownership changes at existing venues ({len(transfers)})</h2><p class="muted">New owners re-bid every vendor contract. Vendor Alert subscribers get these the day they file.</p><ul>{''.join(row(v) for v in transfers)}</ul>
 <h2>Retail beer, wine &amp; liquor ({len(retail)})</h2><ul>{''.join(row(v) for v in retail)}</ul>
 <h2 id="subscribe">Get the alerts</h2>
-<p><a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Free weekly roundup</a> for locals · <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert, $29/month</a> for POS reps, distributors, insurers, linen, payroll and anyone else who sells to new restaurants. Raw data: <a href="data/new.json">new.json</a>, <a href="data/filings.json">filings.json</a>.</p>
+<p><a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Free weekly roundup</a> for locals · <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert, $29/month</a> for POS reps, distributors, insurers, linen, payroll and anyone else who sells to new restaurants. Data licensing for platforms and multi-market teams: hello@liquorlicenseleads.com.</p>
 <p class="muted">Sources: <a href="https://www.phoenix.gov/administration/departments/cityclerk/programs-services/license-services/new-applications.html">City of Phoenix, Newly Received Liquor License Applications</a> · <a href="https://ww2.scottsdaleaz.gov/council/meeting-information/agendas-minutes">Scottsdale City Council agendas</a> · <a href="https://mesa.legistar.com/Legislation.aspx">Mesa City Council (Legistar)</a>. Public records under A.R.S. Title 4.</p>
 </body></html>"""
 (ROOT / "site").mkdir(exist_ok=True)
@@ -98,7 +103,7 @@ def write_feeds(venues, new_venues, today):
     d = today.isoformat()
     by_city = {}
     for r in venues: by_city.setdefault(r.get("city", "Other"), []).append(r)
-    html = "<p>Every restaurant, bar and coffee shop that filed for a liquor license in the last few weeks. They usually open 30&#8211;90 days after filing.</p>"
+    html = "<p>Restaurants, bars and coffee shops that filed for a liquor license this week. They usually open 30&#8211;90 days after filing.</p>"
     for city, rs in sorted(by_city.items()):
         html += f"<h3>{_esc(city)} ({len(rs)})</h3><ul>{_rows(rs, False)}</ul>"
     html += f"<p>Sell to restaurants? The <a href='{UPGRADE_URL}'>Vendor Alert</a> sends these every weekday morning with the applicant's agent name, for $29/month.</p><p>Live board: <a href='{SITE_URL}'>{SITE_URL}</a></p>"
@@ -114,3 +119,7 @@ def write_feeds(venues, new_venues, today):
 _new = json.loads((ROOT / "data" / "new.json").read_text()) if (ROOT / "data" / "new.json").exists() else []
 write_feeds(venues, [r for r in _new if r.get("is_new_venue")], datetime.now(timezone.utc).date())
 print("feeds written")
+
+# public, trimmed JSON (no addresses/contacts) for anyone who wants to build on the delayed board
+(ROOT / "site" / "data").mkdir(exist_ok=True)
+(ROOT / "site" / "data" / "public.json").write_text(json.dumps([{"name": v["name"], "category": v["category"], "city": v.get("city"), "type": v["type"], "first_seen": (v.get("first_seen") or "")[:10]} for v in venues], indent=1))

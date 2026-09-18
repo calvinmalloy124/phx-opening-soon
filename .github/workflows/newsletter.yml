@@ -1,15 +1,15 @@
 name: Newsletter
 on:
   schedule:
-    - cron: "17 15 * * 1-5"   # 8:17am Arizona, weekdays: daily paid alert (after the 7:17 scrape)
-    - cron: "17 16 * * 4"     # 9:17am Arizona, Thursdays: free weekly roundup
+    - cron: "17 15 * * 1-5"   # 8:17am Arizona weekdays: paid daily alert (after the 7:17 scrape)
+    - cron: "17 16 * * 4"     # 9:17am Arizona Thursdays: free weekly roundup
   workflow_dispatch:
     inputs:
       kind:
         description: "weekly or daily"
         default: "weekly"
 permissions:
-  contents: read
+  contents: write
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -24,7 +24,14 @@ jobs:
           if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then echo "kind=${{ github.event.inputs.kind }}" >> $GITHUB_OUTPUT;
           elif [ "$(date -u +%u)" = "4" ] && [ "$(date -u +%H)" = "16" ]; then echo "kind=weekly" >> $GITHUB_OUTPUT;
           else echo "kind=daily" >> $GITHUB_OUTPUT; fi
-      - run: python beehiiv_post.py ${{ steps.k.outputs.kind }}
+      - run: python send_alerts.py ${{ steps.k.outputs.kind }}
         env:
           BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_PUB_ID_CAL }}
           BEEHIIV_PUB_ID: ${{ secrets.BEEHIIV_PUB_ID }}
+          RESEND_KEY: ${{ secrets.RESEND_KEY }}
+      - name: Commit send log
+        run: |
+          git config user.name "alert-bot"; git config user.email "bot@users.noreply.github.com"
+          git add data/send_log.jsonl || true
+          git diff --cached --quiet || git commit -m "send log"
+          git push || true

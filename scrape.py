@@ -22,6 +22,8 @@ from pathlib import Path
 import requests
 from bs4 import BeautifulSoup
 
+import scottsdale
+
 BASE = ("https://www.phoenix.gov/administration/departments/cityclerk/programs-services/"
         "license-services/new-applications/_jcr_content/root/container/container-nav/"
         "container-full-width/container-content/accordion/")
@@ -39,6 +41,7 @@ DATA = Path(__file__).parent / "data"
 FILINGS = DATA / "filings.json"
 NEW = DATA / "new.json"
 LOG = DATA / "run_log.jsonl"
+SCOTTSDALE_SEEN = DATA / "scottsdale_agendas.json"
 
 # Series that mean "a place to eat or drink is coming" vs retail/other
 VENUE_SERIES = {"6": "bar", "7": "beer_wine_bar", "12": "restaurant", "11": "hotel",
@@ -122,6 +125,19 @@ def main():
             seen.extend(recs)
         except Exception as e:  # noqa
             errors.append(f"district {district}: {e}")
+    # ---- Scottsdale (council agenda PDFs) ----
+    sc_seen = set(json.loads(SCOTTSDALE_SEEN.read_text())) if SCOTTSDALE_SEEN.exists() else set()
+    sc_recs, sc_parsed, sc_err = scottsdale.fetch_all(seen_urls=sc_seen)
+    errors.extend(sc_err)
+    for rec in sc_recs:
+        rec["key"] = "sc-" + hashlib.sha1(rec["app_id"].encode()).hexdigest()[:10]
+        seen.append(rec)
+    SCOTTSDALE_SEEN.write_text(json.dumps(sorted(sc_seen | set(sc_parsed))))
+    # keep previously-known Scottsdale records that are still inside their active window
+    for k, v in known.items():
+        if v.get("city") == "Scottsdale" and k not in {r["key"] for r in seen} and scottsdale.is_active(v):
+            seen.append(v)
+
     for rec in seen:
         k = rec["key"]
         if k not in known:
@@ -135,6 +151,7 @@ def main():
     FILINGS.write_text(json.dumps(known, indent=1, sort_keys=True))
     NEW.write_text(json.dumps(new, indent=1))
     log = {"ts": now, "live": len(seen), "new": len(new), "total_known": len(known),
+           "scottsdale_agendas_parsed": len(sc_parsed),
            "new_venues": sum(r["is_new_venue"] for r in new), "errors": errors,
            "secs": round(time.time() - t0, 1)}
     with LOG.open("a") as f:

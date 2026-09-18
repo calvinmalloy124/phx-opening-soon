@@ -34,8 +34,10 @@ def leads():
 
 
 def fill(t, r, l3, wk, ow):
-    first = (r.get("contact_first") or "there")
-    return (t.replace("{first}", first).replace("{company}", r["company"]).replace("{category}", r["category"].lower())
+    first = (r.get("contact_first") or "").strip()
+    t = t.replace("{first}, ", first + ", " if first else "Hi, ").replace("{first}", first or "Hi")
+    cat = r["category"]; cat = cat.upper() if cat.lower() in ("pos", "cpa") else cat.lower()
+    return (t.replace("{company}", r["company"]).replace("{category}", cat)
              .replace("{lead1}", l3[0] if len(l3) > 0 else "").replace("{lead2}", l3[1] if len(l3) > 1 else "").replace("{lead3}", l3[2] if len(l3) > 2 else "")
              .replace("{week_count}", str(wk)).replace("{owner_count}", str(ow)))
 

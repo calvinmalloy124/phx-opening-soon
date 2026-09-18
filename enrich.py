@@ -13,15 +13,18 @@ FIL = ROOT / "data" / "filings.json"; CACHE = ROOT / "data" / "enrich.json"
 H = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
 SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "ubereats.", "grubhub.", "opentable.", "google.", "mapquest.", "phoenix.gov", "scottsdaleaz.gov", "legistar.", "azliquor", "restaurantji", "menupix", "zomato", "foursquare", "loopnet", "crexi", "bizbuysell", "linkedin.")
-MAX_PER_RUN = 40
+MAX_PER_RUN = 12
 
 
 def phoenix_pdf(url):
     try:
         from pypdf import PdfReader
-        b = requests.get(url, headers=H, timeout=60).content
+        r = requests.get(url, headers=H, timeout=60)
+        b = r.content
         txt = "\n".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(b)).pages[:3])
-    except Exception:
+        print(f"  pdf {r.status_code} {len(b)}B text={len(txt)} :: {txt[:160]!r}")
+    except Exception as ex:
+        print(f"  pdf error {ex}")
         return {}
     out = {}
     m = PHONE.search(txt)
@@ -36,8 +39,15 @@ def phoenix_pdf(url):
 def ddg(q):
     try:
         r = requests.post("https://html.duckduckgo.com/html/", data={"q": q}, headers=H, timeout=30)
-        return re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', r.text)
-    except Exception:
+        links = re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', r.text)
+        if not links:
+            print(f"  ddg {r.status_code} no results ({len(r.text)}B) -> trying bing")
+            b = requests.get("https://www.bing.com/search", params={"q": q, "setlang": "en"}, headers=H, timeout=30)
+            links = re.findall(r'<li class="b_algo".*?<h2><a href="([^"]+)"', b.text, re.S)
+            print(f"  bing {b.status_code} {len(links)} links")
+        return links
+    except Exception as ex:
+        print(f"  search error {ex}")
         return []
 
 
@@ -71,7 +81,9 @@ def main():
         if v.get("city") == "Phoenix" and v.get("pdf_application"):
             e.update(phoenix_pdf(v["pdf_application"]))
         e.update(socials(v["name"], v.get("city", "Phoenix")))
-        cache[k] = e; done += 1
+        print(f"{v['name']} ({v.get('city')}) -> {e}")
+        if e: cache[k] = e
+        done += 1
     # merge cached fields into filings (never overwrite a non-empty agent)
     for k, e in cache.items():
         if k in filings:

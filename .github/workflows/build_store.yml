@@ -12,7 +12,7 @@ jobs:
         with: { python-version: "3.12" }
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq libreoffice-calc poppler-utils fonts-liberation > /dev/null
       - run: pip install openpyxl pillow
-      - run: cd products && base64 -d bundle.b64 | tar xz && python build_b.py && python dash_b.py && python render_previews.py store_b
+      - run: cd products && base64 -d bundle.b64 | tar xz && python build_b.py && python dash_b.py && python render_previews.py store_b && python covers.py store_b
       - name: Commit
         run: |
           git config user.name "builder-bot"

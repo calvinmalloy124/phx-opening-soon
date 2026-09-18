@@ -126,7 +126,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 <p class="muted"><b>Day one isn't empty.</b> Your first email is the entire current board: every active filing from the last 45 days ({len(venues) + _week_new} venues and {len(transfers) + _week_own} ownership changes right now) with full contact details, so you can work last month's openings too.</p>
 
 <div class="grid" style="margin-top:32px">
-<div class="card"><div class="stat">{len(venues) + _week_new}</div><div class="muted">restaurants &amp; bars pending right now</div></div>
+<div class="card"><div class="stat">{len(venues) + _week_new}</div><div class="muted">restaurants &amp; bars pending right now (every filing in Phoenix, Scottsdale &amp; Mesa)</div></div>
 <div class="card"><div class="stat">{_week_new}</div><div class="muted">new filings in the last 7 days</div></div>
 <div class="card"><div class="stat">{_week_own}</div><div class="muted">ownership changes this week</div></div>
 </div>
@@ -154,7 +154,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 </div>
 
 <h2>Where the data comes from</h2>
-<p class="muted">City of Phoenix liquor license applications, Scottsdale City Council agendas and Mesa City Council filings, read every morning. Contact details come from the Arizona Department of Liquor Licenses and Control report attached to each application. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">Phoenix board</a> (7-day delay).</p>
+<p class="muted">City of Phoenix liquor license applications, Scottsdale City Council agendas and Mesa City Council filings, read every morning. Contact details come from the Arizona Department of Liquor Licenses and Control report attached to each application. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">Phoenix board</a> (7-day delay; subscribers get every filing the morning it appears).</p>
 
 <footer>Liquor License Leads \u00b7 Phoenix, AZ \u00b7 <a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a> \u00b7 Not affiliated with any city or the State of Arizona.</footer>
 </div></body></html>"""

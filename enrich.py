@@ -12,7 +12,23 @@ ROOT = Path(__file__).parent
 FIL = ROOT / "data" / "filings.json"; CACHE = ROOT / "data" / "enrich.json"
 H = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]?\d{3}[-. ]\d{4}\b")
-SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "ubereats.", "grubhub.", "opentable.", "google.", "mapquest.", "phoenix.gov", "scottsdaleaz.gov", "legistar.", "azliquor", "restaurantji", "menupix", "zomato", "foursquare", "loopnet", "crexi", "bizbuysell", "linkedin.")
+SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "ubereats.", "grubhub.", "opentable.", "google.", "mapquest.", "phoenix.gov", "scottsdaleaz.gov", "legistar.", "azliquor", "restaurantji", "menupix", "zomato", "foursquare", "loopnet", "crexi", "bizbuysell", "linkedin.", "restaurantguru", "visitphoenix", "phoenixnewtimes", "azcentral", "eater.", "tiktok.", "youtube.", "wikipedia", "roadtrippers", "mapstr", "untappd", "beeradvocate", "sirved", "allmenus", "toasttab", "squareup", "clover.", "postmates", "seamless", "nextdoor", "bbb.org", "manta.", "dnb.", "chamberofcommerce", "birdeye", "top-rated", "wanderlog", "trip.com", "expedia", "kayak", "hotels.", "booking.")
+STOP = {"the", "and", "of", "a", "an", "at", "by", "in", "on", "bar", "grill", "cafe", "coffee", "restaurant", "kitchen", "company", "co", "llc", "inc", "house", "phoenix", "scottsdale", "mesa", "az", "from", "food", "mexican", "cocina", "brunch", "bistro", "sushi", "pizza", "taco", "tacos", "bbq", "lounge", "club", "cantina", "steakhouse", "brewing", "brewery", "wine", "beer", "spirits", "tavern", "pub", "eatery", "market", "bakery", "deli"}
+
+def _tokens(name):
+    words = re.findall(r"[a-z0-9]+", (name or "").lower())
+    toks = {t for t in words if len(t) >= 3 and t not in STOP}
+    if len(words) >= 3: toks.add("".join(w[0] for w in words))   # acronym, e.g. "gitd" for Globe In The Dark
+    return toks
+
+def _relevant(url, name):
+    """URL's domain/handle shares a meaningful word with the venue name (squashed, e.g. 'bonitasphx' matches 'bonitas')."""
+    toks = _tokens(name)
+    if not toks: return True
+    m = re.search(r"https?://(?:www\.)?([^/]+)/?([^/?#]*)", url or "")
+    if not m: return False
+    hay = (m.group(1).split(".")[0] + " " + m.group(2)).lower().replace("-", "").replace("_", "")
+    return any(t in hay for t in toks)
 MAX_PER_RUN = 15
 
 
@@ -96,12 +112,12 @@ def socials(name, city):
     out = {}
     for u in ddg(f'"{name}" {city} instagram')[:8]:
         u = clean(u)
-        if "instagram.com/" in u and "/p/" not in u and "/reel/" not in u and "/explore/" not in u:
+        if "instagram.com/" in u and not re.search(r"instagram\.com/(p|reel|reels|explore|popular|stories|locations|tags|accounts)/", u) and _relevant(u, name):
             out["instagram"] = u.split("?")[0]; break
     time.sleep(2)
     for u in ddg(f'"{name}" {city} restaurant')[:8]:
         u = clean(u)
-        if u.startswith("http") and not any(s in u for s in SKIP):
+        if u.startswith("http") and not any(s in u.lower() for s in SKIP) and _relevant(u, name):
             out["website"] = u.split("?")[0]; break
     time.sleep(2)
     return out

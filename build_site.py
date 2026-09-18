@@ -82,17 +82,42 @@ def _redact_email(e):
     u, dom = e.split("@", 1); return u[:2] + "\u2022\u2022\u2022\u2022@" + dom
 
 _recent = sorted([v for v in _all_active if v["is_new_venue"] and v["category"] in ("restaurant", "bar", "beer_wine_bar", "microbrewery")], key=lambda v: v.get("first_seen", ""), reverse=True)
-_samples = [v for v in _recent if v.get("phone") or v.get("agent") or v.get("email")][:3] or _recent[:3]
+_score = lambda v: (bool(v.get("phone")) + bool(v.get("email")) + bool(v.get("instagram")) + bool(v.get("agent")) + bool(v.get("website")))
+_samples = sorted(_recent, key=lambda v: (-_score(v), v.get("first_seen", "")), reverse=False)[:3]
 _week_new = len([v for v in _all_active if v["is_new_venue"] and (v.get("first_seen") or "")[:10] > _cutoff])
 _week_own = len([v for v in _all_active if not v["is_new_venue"] and v["category"] not in ("beer_wine_store", "liquor_store", "other") and (v.get("first_seen") or "")[:10] > _cutoff])
+
+import hashlib as _hl
+def _scramble(s, keep=2):
+    """Same shape as the real value, deterministic, but not the real value (blur is cosmetic; source stays clean)."""
+    h = _hl.md5(s.encode()).hexdigest()
+    out, hi = [], 0
+    for i, ch in enumerate(s):
+        if i < keep or not ch.isalnum(): out.append(ch); continue
+        d = int(h[hi % 32], 16); hi += 1
+        out.append(str(d % 10) if ch.isdigit() else "abcdefghijklmnopqrstuvwxyz"[d % 26])
+    return "".join(out)
+
+def _lock(label, real):
+    if "@" in real:
+        u, dom = real.split("@", 1); fake = _scramble(u, 2) + "@" + dom
+    elif label == "phone":
+        fake = _scramble(real, 5)
+    else:
+        fake = _scramble(real, 3)
+    return f'<span class="lock" title="Subscribers see this">{label} <span class="blur">{escape(fake)}</span> \U0001F512</span>'
 
 def _sample_card(v):
     bits = [f'<span class="tag">{LABEL.get(v["category"], "Venue")}</span><span class="tag">{escape(v.get("city", ""))}</span>']
     line2 = [escape(v.get("address", ""))]
     if v.get("agent"): line2.append(f'applicant <b>{escape(v["agent"])}</b>')
-    if v.get("phone"): line2.append(_redact_phone(v["phone"]))
-    if v.get("email"): line2.append(_redact_email(v["email"]))
-    return f'<div class="lead"><div><strong>{escape(v["name"])}</strong> {" ".join(bits)}</div><div class="muted">{" \u00b7 ".join(x for x in line2 if x)}</div><div class="muted small">Filed {escape((v.get("first_seen") or "")[:10])} \u00b7 usually opens 30\u201390 days later</div></div>'
+    line3 = []
+    if v.get("phone"): line3.append(_lock("phone", v["phone"]))
+    if v.get("email"): line3.append(_lock("email", v["email"]))
+    if v.get("instagram"): line3.append(_lock("instagram", "@" + v["instagram"].rstrip("/").split("/")[-1]))
+    if v.get("website"): line3.append(_lock("site", v["website"].split("//")[-1].split("/")[0]))
+    l3 = f'<div class="muted">{" \u00b7 ".join(line3)}</div>' if line3 else ""
+    return f'<div class="lead"><div><strong>{escape(v["name"])}</strong> {" ".join(bits)}</div><div class="muted">{" \u00b7 ".join(x for x in line2 if x)}</div>{l3}<div class="muted small">Filed {escape((v.get("first_seen") or "")[:10])} \u00b7 usually opens 30\u201390 days later</div></div>'
 
 landing_html = f"""<!doctype html><html lang="en"><head><meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
@@ -112,6 +137,7 @@ h1{{font-size:2.4rem;line-height:1.1;letter-spacing:-.02em;margin:0 0 14px}} h2{
 .lead{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px 16px;margin:10px 0}}
 .tag{{font-size:.72rem;background:var(--tag);padding:2px 8px;border-radius:99px;margin-left:6px;color:var(--acc)}}
 .muted{{color:var(--muted)}} .small{{font-size:.85rem}}
+.blur{{filter:blur(5px);user-select:none;color:var(--fg)}} .lock{{white-space:nowrap}}
 .grid{{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}}
 .card{{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:18px}}
 .price{{font-size:2.2rem;font-weight:800}} ul{{padding-left:20px}} li{{margin:6px 0}}
@@ -133,7 +159,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 </div>
 
 <h2>What a lead looks like</h2>
-<p class="muted">Real filings from this week. Subscribers see the full contact details.</p>
+<p class="muted">Real filings from the board. Blurred fields are what subscribers unlock.</p>
 {"".join(_sample_card(v) for v in _samples)}
 
 <h2>Who this is for</h2>

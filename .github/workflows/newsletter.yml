@@ -1,15 +1,18 @@
 name: Newsletter
 on:
   schedule:
-    - cron: "17 15 * * 1-5"   # 8:17am Arizona weekdays: paid daily alert (after the 7:17 scrape)
-    - cron: "17 16 * * 4"     # 9:17am Arizona Thursdays: free weekly roundup
+    - cron: "17 15 * * 1-5"   # 8:17am Arizona, weekdays: daily paid Vendor Alert (after the 7:17 scrape)
+    - cron: "17 16 * * 4"     # 9:17am Arizona, Thursdays: free weekly roundup
   workflow_dispatch:
     inputs:
       kind:
         description: "weekly or daily"
         default: "weekly"
+      test_to:
+        description: "If set, send only to this address (test mode)"
+        default: ""
 permissions:
-  contents: write
+  contents: read
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -29,9 +32,4 @@ jobs:
           BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_PUB_ID_CAL }}
           BEEHIIV_PUB_ID: ${{ secrets.BEEHIIV_PUB_ID }}
           RESEND_KEY: ${{ secrets.RESEND_KEY }}
-      - name: Commit send log
-        run: |
-          git config user.name "alert-bot"; git config user.email "bot@users.noreply.github.com"
-          git add data/send_log.jsonl || true
-          git diff --cached --quiet || git commit -m "send log"
-          git push || true
+          TEST_TO: ${{ github.event.inputs.test_to }}

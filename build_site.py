@@ -143,6 +143,7 @@ h1{{font-size:2.4rem;line-height:1.1;letter-spacing:-.02em;margin:0 0 14px}} h2{
 .price{{font-size:2.2rem;font-weight:800}} ul{{padding-left:20px}} li{{margin:6px 0}}
 .stat{{font-size:2rem;font-weight:800;color:var(--acc)}}
 footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
+.embed{{margin-top:8px}} .embed iframe{{max-width:100%}}
 @media(max-width:600px){{h1{{font-size:1.9rem}}}}
 </style></head><body><div class="wrap">
 <header><a class="logo" href="/">Liquor License Leads</a><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get the daily alert \u2192</a></header>
@@ -176,7 +177,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 <h2>Pricing</h2>
 <div class="grid">
 <div class="card"><div class="price">$29<span class="muted small">/mo</span></div><b>Vendor Alert</b><ul><li>Every weekday morning</li><li>Phoenix, Scottsdale &amp; Mesa (more cities coming)</li><li>Address, applicant, phone, email, link to the record</li><li>Ownership changes flagged</li><li>Full 45-day backlog on day one</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></div>
-<div class="card"><div class="price">Free</div><b>Thursday roundup</b><ul><li>This week's new venues, names and cities</li><li>For locals who want to know what's coming</li></ul><a class="btn alt" href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free \u2192</a></div>
+<div class="card" id="free"><div class="price">Free</div><b>Thursday roundup</b><ul><li>This week's new venues, names and cities</li><li>For locals who want to know what's coming</li></ul><div class="embed"><script async src="https://subscribe-forms.beehiiv.com/v3/loader.js" data-beehiiv-form="88ab1535-52a2-4a24-947a-40848878c015"></script></div></div>
 <div class="card"><div class="price">Teams</div><b>Data licensing</b><ul><li>Multi-market, CSV/API delivery</li><li>Regional and national sales teams</li></ul><a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a></div>
 </div>
 
@@ -246,3 +247,8 @@ print("feeds written")
 # public, trimmed JSON (no addresses/contacts) for anyone who wants to build on the delayed board
 (ROOT / "site" / "data").mkdir(exist_ok=True)
 (ROOT / "site" / "data" / "public.json").write_text(json.dumps([{"name": v["name"], "category": v["category"], "city": v.get("city"), "type": v["type"], "first_seen": (v.get("first_seen") or "")[:10]} for v in venues], indent=1))
+
+
+# thank-you page for the free signup redirect
+(ROOT / "site" / "thanks").mkdir(parents=True, exist_ok=True)
+(ROOT / "site" / "thanks" / "index.html").write_text("""<!doctype html><html lang=\"en\"><head><meta charset=\"utf-8\"><meta name=\"viewport\" content=\"width=device-width,initial-scale=1\"><title>You're in \u2014 Liquor License Leads</title><meta name=\"robots\" content=\"noindex\"><style>body{{margin:0;font:17px/1.55 system-ui,sans-serif;background:#f4f1ec;color:#1f2a2c}}.wrap{{max-width:640px;margin:0 auto;padding:60px 20px}}a{{color:#2e6f73}}.btn{{display:inline-block;background:#c7813f;color:#fff;text-decoration:none;font-weight:700;padding:14px 22px;border-radius:10px}}</style></head><body><div class=\"wrap\"><h1>You're in.</h1><p>Check your inbox for a welcome email (look in Promotions if it isn't there). Every Thursday you'll get the week's new restaurant and bar filings across the Valley.</p><p><b>Sell to restaurants?</b> The Vendor Alert sends every filing the morning it appears, with the applicant's name, phone and email, plus the full 45-day board on day one.</p><p><a class=\"btn\" href=\"https://phxopeningsoon.beehiiv.com/upgrade\" rel=\"noopener\">Get the daily alert, $29/month \u2192</a></p><p><a href=\"/\">Back to the site</a></p></div></body></html>""")

@@ -80,8 +80,12 @@ def build(kind):
     subj = f"{len(venues)} new restaurants and bars filed this week in the Valley"
     teaser = f"<p style='border:1px solid #ddd;padding:10px;border-radius:6px'><b>Sell to restaurants?</b> Vendor Alert subscribers got each of these the morning it filed, with the address, the applicant's name, and the record" + (f", plus <b>{len(owner_week)} ownership change{'s' if len(owner_week)!=1 else ''}</b> at existing venues this week" if owner_week else "") + f". <a href='{UPGRADE}'>$29/month, cancel anytime →</a></p>"
     html = teaser + "<p>Restaurants, bars and coffee shops that filed for a liquor license this week. They usually open 30–90 days after filing.</p>"
+    shown = sorted(venues, key=lambda x: x.get("first_seen", ""), reverse=True)[:10]
+    by_city = {}
+    for r in shown: by_city.setdefault(r.get("city", "Other"), []).append(r)
     for city, rs in sorted(by_city.items()): html += f"<h3>{city} ({len(rs)})</h3><ul>{rows(rs, False)}</ul>"
-    html += f"<p>Full board (7-day delay; Vendor Alert subscribers get every filing the morning it appears): <a href='{SITE}'>{SITE}</a></p>{foot}"
+    if len(venues) > 10: html += f"<p><b>{len(venues) - 10} more filed this week.</b> Vendor Alert subscribers have all of them, with address, applicant, phone and email: <a href='{UPGRADE}'>subscribe</a>.</p>"
+    html += f"<p>Board: <a href='{SITE}'>{SITE}</a></p>{foot}"
     return subj, html, FROM_FREE, False
 
 

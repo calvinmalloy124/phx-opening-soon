@@ -19,7 +19,7 @@ jobs:
       - run: python scrape.py
       - run: python enrich.py
         env:
-          BRAVE_KEY: ${{ secrets.BRAVE_KEY }}
+          BRAVE_KEY: ${{ secrets.BRAVE_API }}
           DUMP_OCR: ${{ github.event_name == 'workflow_dispatch' && '1' || '' }}
       - run: python build_site.py
       - name: Commit data

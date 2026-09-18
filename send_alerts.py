@@ -85,6 +85,31 @@ def build(kind):
     return subj, html, FROM_FREE, False
 
 
+SEEN = "data/paid_seen.json"
+
+def welcome_new_paid():
+    """Send the full backlog (all active leads, full contacts) to premium subscribers we haven't welcomed yet."""
+    seen = set(json.load(open(SEEN))) if os.path.exists(SEEN) else set()
+    paid = subscribers(premium_only=True)
+    new = [e for e in paid if e not in seen]
+    if not new:
+        print("welcome: no new paid subscribers"); return
+    f = json.load(open("data/filings.json"))
+    active = [v for v in f.values() if v.get("active") and v.get("category") not in ("beer_wine_store", "liquor_store", "other")]
+    venues = [v for v in active if v.get("is_new_venue")]; owners = [v for v in active if not v.get("is_new_venue")]
+    html = (f"<p>Welcome to the Vendor Alert. Here's everything currently on the board so you can start today: "
+            f"<b>{len(venues)} new venues</b> and <b>{len(owners)} ownership changes</b> from the last ~45 days, with the applicant, phone and email wherever the public record has them. "
+            f"From tomorrow you'll get each new filing the morning it appears.</p>")
+    by_city = {}
+    for v in venues: by_city.setdefault(v.get("city", "Other"), []).append(v)
+    for city, rs in sorted(by_city.items()): html += f"<h3>{city} ({len(rs)})</h3><ul>{rows(rs, True)}</ul>"
+    if owners: html += f"<h3>Ownership changes ({len(owners)})</h3><ul>{rows(owners, True)}</ul>"
+    html += f"<p>Reply to this email with questions, corrections, or a city you want added. Manage your subscription: <a href='{MANAGE}'>here</a>.</p>"
+    send(f"Your starting board: {len(venues)} venues and {len(owners)} ownership changes", html, FROM_PAID, new)
+    json.dump(sorted(seen | set(new)), open(SEEN, "w"))
+    print(f"welcome: sent backlog to {len(new)} new paid subscriber(s)")
+
+
 def send(subj, html, sender, to):
     # Resend batch endpoint: up to 100 messages per call
     for i in range(0, len(to), 100):
@@ -95,6 +120,8 @@ def send(subj, html, sender, to):
 
 if __name__ == "__main__":
     kind = sys.argv[1] if len(sys.argv) > 1 else "weekly"
+    if kind == "welcome":
+        welcome_new_paid(); sys.exit(0)
     b = build(kind)
     if b is None: print("no new venues today; nothing sent"); sys.exit(0)
     subj, html, sender, premium = b

@@ -14,9 +14,12 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
-      - run: pip install -r requirements.txt
+      - run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr poppler-utils > /dev/null
+      - run: pip install -r requirements.txt pytesseract pdf2image
       - run: python scrape.py
       - run: python enrich.py
+        env:
+          BRAVE_KEY: ${{ secrets.BRAVE_KEY }}
       - run: python build_site.py
       - name: Commit data
         run: |

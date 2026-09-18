@@ -81,7 +81,7 @@ def build(kind):
     teaser = f"<p style='border:1px solid #ddd;padding:10px;border-radius:6px'><b>Sell to restaurants?</b> Vendor Alert subscribers got each of these the morning it filed, with the address, the applicant's name, and the record" + (f", plus <b>{len(owner_week)} ownership change{'s' if len(owner_week)!=1 else ''}</b> at existing venues this week" if owner_week else "") + f". <a href='{UPGRADE}'>$29/month, cancel anytime →</a></p>"
     html = teaser + "<p>Restaurants, bars and coffee shops that filed for a liquor license this week. They usually open 30–90 days after filing.</p>"
     for city, rs in sorted(by_city.items()): html += f"<h3>{city} ({len(rs)})</h3><ul>{rows(rs, False)}</ul>"
-    html += f"<p>Full board (7-day delay): <a href='{SITE}'>{SITE}</a></p>{foot}"
+    html += f"<p>Full board (7-day delay; Vendor Alert subscribers get every filing the morning it appears): <a href='{SITE}'>{SITE}</a></p>{foot}"
     return subj, html, FROM_FREE, False
 
 

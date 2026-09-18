@@ -12,7 +12,7 @@ liquor-license application → diffs against `data/filings.json` → writes `dat
 1. **Public page** (`site/`) — SEO magnet: "new restaurants opening Phoenix". Live via GitHub Pages. ✅
 2. **Weekly vendor alert** — paid, $25–50/mo. Send `data/new.json` filtered to `is_new_venue` via Resend/Beehiiv. ⬜
 3. **Consumer newsletter** — free, sponsor-funded. ⬜
-4. **Second metro** — Scottsdale / Tempe / Mesa / Gilbert each publish council agendas; add a parser per city. ⬜
+4. **Second metro** — Scottsdale ✅ (council agenda PDFs, `scottsdale.py`). Tempe / Mesa / Gilbert / Chandler ⬜
 
 ## Data fields
 name, address, district, series (AZ DLLC series number), series_label, type (New | Acquisition of Control |
@@ -23,5 +23,6 @@ application PDF — has applicant name + contact), first_seen, last_seen, active
     pip install -r requirements.txt && python scrape.py && python build_site.py
 
 ## Decisions log
+- 2026-09-18: Added Scottsdale. No standing list there; items appear on Council agenda PDFs ~10 days before meeting. Parsed agendas tracked in data/scottsdale_agendas.json; records stay active 45 days past meeting date.
 - 2026-09-17: Source confirmed. 8 static endpoints, no auth, ~58 live filings. Chose GitHub Actions + Pages
   (free, zero servers). Alert email deferred until domain + sender are set up.

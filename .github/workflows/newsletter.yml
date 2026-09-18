@@ -26,5 +26,5 @@ jobs:
           else echo "kind=daily" >> $GITHUB_OUTPUT; fi
       - run: python beehiiv_post.py ${{ steps.k.outputs.kind }}
         env:
-          BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_API_KEY }}
+          BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_PUB_ID_CAL }}
           BEEHIIV_PUB_ID: ${{ secrets.BEEHIIV_PUB_ID }}

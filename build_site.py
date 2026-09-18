@@ -9,7 +9,7 @@ filings = json.loads((ROOT / "data" / "filings.json").read_text()) if (ROOT / "d
 from datetime import date as _date, timedelta as _td
 _cutoff = (datetime.now(timezone.utc).date() - _td(days=7)).isoformat()
 _all_active = [v for v in filings.values() if v.get("active")]
-active = [v for v in _all_active if (v.get("first_seen") or "")[:10] <= _cutoff]
+active = list(_all_active)   # public board is live; it shows only the 10 most recent, names and cities
 held_back = len([v for v in _all_active if v["is_new_venue"] and (v.get("first_seen") or "")[:10] > _cutoff])
 CITIES = ["Phoenix", "Scottsdale", "Mesa"]
 venues = sorted([v for v in active if v["is_new_venue"]], key=lambda v: v.get("first_seen", ""), reverse=True)
@@ -52,11 +52,12 @@ ul{{list-style:none;padding:0}} li{{padding:.7rem 0;border-bottom:1px solid var(
 <p class="muted">Sourced daily from City of Phoenix liquor license filings, Scottsdale City Council agendas and Mesa City Council filings. A "New" application usually means a venue 1–6 months from opening. Updated {updated}. Not affiliated with the City of Phoenix.</p>
 <div class="cta"><strong>Want this every Thursday?</strong> Free weekly email of every restaurant and bar about to open in the Valley. <a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free →</a></div>
 <div class="cta"><strong>Sell to restaurants and bars?</strong> The <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert</a> emails you every new filing each weekday morning with the applicant's agent name and a link to the record, weeks before the doors open. $29/month, cancel anytime.</div>
-<h2>{len(venues)} new venues pending</h2>
-{f'<p class="cta"><strong>{held_back} more filed in the last 7 days.</strong> Vendor Alert subscribers already have them, with the address, the applicant and a link to the record. <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get the daily alert →</a></p>' if held_back else ''}<ul>{''.join(row(v) for v in venues) or '<li class="muted">None currently listed.</li>'}</ul>
+<h2>{len(venues)} new venues pending (the 10 most recent, live)</h2>
+{f'<p class="cta"><strong>{held_back} more filed in the last 7 days.</strong> Vendor Alert subscribers already have them, with the address, the applicant and a link to the record. <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get the daily alert →</a></p>' if held_back else ''}<ul>{''.join(row(v) for v in venues[:10]) or '<li class="muted">None currently listed.</li>'}</ul>
+{f'<p class="cta"><strong>{len(venues) - 10} more pending</strong> beyond the ten shown. Vendor Alert subscribers get every filing the morning it appears, with address, applicant, phone and email. <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></p>' if len(venues) > 10 else ''}
 <p class="muted">By city: {' · '.join(f"{c} {sum(1 for v in venues if v.get('city')==c)}" for c in CITIES)}</p>
-<h2>Ownership changes at existing venues ({len(transfers)})</h2><p class="muted">New owners re-bid every vendor contract. Vendor Alert subscribers get these the day they file.</p><ul>{''.join(row(v) for v in transfers)}</ul>
-<h2>Retail beer, wine &amp; liquor ({len(retail)})</h2><ul>{''.join(row(v) for v in retail)}</ul>
+<h2>Ownership changes at existing venues ({len(transfers)})</h2><p class="muted">New owners re-bid every vendor contract. Vendor Alert subscribers get these the day they file, with names and contacts.</p>
+<h2>Retail beer, wine &amp; liquor ({len(retail)})</h2><p class="muted">Included in the Vendor Alert with category tags.</p>
 <h2 id="subscribe">Get the alerts</h2>
 <p><a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Free weekly roundup</a> for locals · <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert, $29/month</a> for POS reps, distributors, insurers, linen, payroll and anyone else who sells to new restaurants. Data licensing for platforms and multi-market teams: hello@liquorlicenseleads.com.</p>
 <p class="muted">Sources: <a href="https://www.phoenix.gov/administration/departments/cityclerk/programs-services/license-services/new-applications.html">City of Phoenix, Newly Received Liquor License Applications</a> · <a href="https://ww2.scottsdaleaz.gov/council/meeting-information/agendas-minutes">Scottsdale City Council agendas</a> · <a href="https://mesa.legistar.com/Legislation.aspx">Mesa City Council (Legistar)</a>. Public records under A.R.S. Title 4.</p>
@@ -154,7 +155,7 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 </div>
 
 <h2>Where the data comes from</h2>
-<p class="muted">City of Phoenix liquor license applications, Scottsdale City Council agendas and Mesa City Council filings, read every morning. Contact details come from the Arizona Department of Liquor Licenses and Control report attached to each application. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">Phoenix board</a> (7-day delay; subscribers get every filing the morning it appears).</p>
+<p class="muted">City of Phoenix liquor license applications, Scottsdale City Council agendas and Mesa City Council filings, read every morning. Contact details come from the Arizona Department of Liquor Licenses and Control report attached to each application. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">Phoenix board</a> (the 10 most recent; subscribers get every filing with contacts the morning it appears).</p>
 
 <footer>Liquor License Leads \u00b7 Phoenix, AZ \u00b7 <a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a> \u00b7 Not affiliated with any city or the State of Arizona.</footer>
 </div></body></html>"""

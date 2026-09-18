@@ -13,7 +13,7 @@ FIL = ROOT / "data" / "filings.json"; CACHE = ROOT / "data" / "enrich.json"
 H = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
 PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
 SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "ubereats.", "grubhub.", "opentable.", "google.", "mapquest.", "phoenix.gov", "scottsdaleaz.gov", "legistar.", "azliquor", "restaurantji", "menupix", "zomato", "foursquare", "loopnet", "crexi", "bizbuysell", "linkedin.")
-MAX_PER_RUN = 12
+MAX_PER_RUN = 3
 
 
 def ocr_pdf(b, pages=2):
@@ -35,7 +35,8 @@ def phoenix_pdf(url):
         txt = "\n".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(b)).pages[:3])
         if len(txt.strip()) < 50:
             txt = ocr_pdf(b)
-        print(f"  pdf {r.status_code} {len(b)}B text={len(txt)} :: {txt[:200]!r}")
+        print(f"  pdf {r.status_code} {len(b)}B text={len(txt)}")
+        if os.environ.get("DUMP_OCR"): print("----OCR----\n" + txt[:3000] + "\n----END----")
     except Exception as ex:
         print(f"  pdf error {ex}")
         return {}

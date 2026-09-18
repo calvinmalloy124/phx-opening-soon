@@ -4,7 +4,7 @@ Enrich active filings with public contact signals. Cached in data/enrich.json (o
 - All: DuckDuckGo HTML search for the venue's Instagram and website.
 Fields added to filings: agent (if missing), phone, instagram, website.
 """
-import io, json, re, time, html
+import io, json, os, re, time, html
 from pathlib import Path
 import requests
 
@@ -16,27 +16,51 @@ SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "uberea
 MAX_PER_RUN = 12
 
 
+def ocr_pdf(b, pages=2):
+    """Scanned PDF -> text via tesseract (installed in the workflow)."""
+    try:
+        from pdf2image import convert_from_bytes
+        import pytesseract
+        imgs = convert_from_bytes(b, dpi=200, first_page=1, last_page=pages)
+        return "\n".join(pytesseract.image_to_string(im) for im in imgs)
+    except Exception as ex:
+        print(f"  ocr error {ex}"); return ""
+
+
 def phoenix_pdf(url):
     try:
         from pypdf import PdfReader
         r = requests.get(url, headers=H, timeout=60)
         b = r.content
         txt = "\n".join((p.extract_text() or "") for p in PdfReader(io.BytesIO(b)).pages[:3])
-        print(f"  pdf {r.status_code} {len(b)}B text={len(txt)} :: {txt[:160]!r}")
+        if len(txt.strip()) < 50:
+            txt = ocr_pdf(b)
+        print(f"  pdf {r.status_code} {len(b)}B text={len(txt)} :: {txt[:200]!r}")
     except Exception as ex:
         print(f"  pdf error {ex}")
         return {}
     out = {}
     m = PHONE.search(txt)
     if m: out["phone"] = m.group(0)
-    for pat in [r"(?:Agent|Applicant|Owner)[^\n:]{0,25}[:\-]\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})",
+    for pat in [r"(?:Agent|Applicant|Owner|Controlling Person)[^\n:]{0,40}[:\-]\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})",
+                r"(?:Agent|Applicant)[^\n]*\n\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})",
                 r"Name of Applicant[^\n]*\n\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})"]:
         m = re.search(pat, txt)
         if m: out["agent"] = m.group(1).strip(); break
     return out
 
 
+BRAVE = os.environ.get("BRAVE_KEY", "")
+
+def brave(q):
+    r = requests.get("https://api.search.brave.com/res/v1/web/search", params={"q": q, "count": 8, "country": "us"},
+                     headers={"Accept": "application/json", "X-Subscription-Token": BRAVE}, timeout=30)
+    if r.status_code != 200: print(f"  brave {r.status_code}"); return []
+    return [x.get("url") for x in r.json().get("web", {}).get("results", []) if x.get("url")]
+
+
 def ddg(q):
+    if BRAVE: return brave(q)
     try:
         r = requests.post("https://html.duckduckgo.com/html/", data={"q": q}, headers=H, timeout=30)
         links = re.findall(r'<a[^>]+class="result__a"[^>]+href="([^"]+)"', r.text)

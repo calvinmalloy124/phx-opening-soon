@@ -26,7 +26,7 @@ HEADERS = {"User-Agent": "Mozilla/5.0 (compatible; PHXOpeningSoon/1.0)"}
 ACTIVE_DAYS = 45
 
 ITEM_RE = re.compile(
-    r"\n\s*\d+\.\s+(?P<name>[^\n]+?)\s+Liquor License\s*\((?P<app>[^)]+)\)\s*"
+    r"\n\s*\d+\.\s+(?P<name>[^\n]+?)\s+Liquor License\s*\((?P<app>[^)]+)\)(?P<outcome>[^\n]*)\s*"
     r"Request:(?P<req>.*?)Location:\s*(?P<loc>[^\n]+)",
     re.S | re.I,
 )
@@ -102,6 +102,7 @@ def parse_agenda_text(text, meeting_date, url=""):
             "pdf_map": "",
             "meeting_date": meeting_date,
             "request_text": req,
+            "outcome": " ".join(m.group("outcome").replace("\u2013", "-").strip(" -.").split()),
         })
     return recs
 

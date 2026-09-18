@@ -1,3 +1,4 @@
 {"ts": "2026-09-18T01:49:02+00:00", "live": 58, "new": 58, "total_known": 58, "new_venues": 8, "errors": [], "secs": 4.0}
 {"ts": "2026-09-18T04:15:30+00:00", "live": 60, "new": 2, "total_known": 60, "scottsdale_agendas_parsed": 6, "new_venues": 0, "errors": [], "secs": 8.1}
 {"ts": "2026-09-18T04:18:15+00:00", "live": 83, "new": 23, "total_known": 83, "scottsdale_agendas_parsed": 6, "new_venues": 1, "errors": [], "secs": 11.3}
+{"ts": "2026-09-18T04:20:55+00:00", "live": 83, "new": 0, "total_known": 83, "scottsdale_agendas_parsed": 6, "new_venues": 0, "errors": [], "secs": 5.4}

@@ -46,13 +46,14 @@ ul{{list-style:none;padding:0}} li{{padding:.7rem 0;border-bottom:1px solid var(
 </style></head><body>
 <h1>New restaurants &amp; bars opening soon in Phoenix, Scottsdale &amp; Mesa</h1>
 <p class="muted">Sourced daily from City of Phoenix liquor license filings, Scottsdale City Council agendas and Mesa City Council filings. A "New" application usually means a venue 1–6 months from opening. Updated {updated}. Not affiliated with the City of Phoenix.</p>
-<div class="cta"><strong>Sell to restaurants and bars?</strong> Get every new filing in your inbox each week, with applicant details and address, before they open. <a href="#subscribe">Weekly alert for vendors →</a></div>
+<div class="cta"><strong>Want this every Thursday?</strong> Free weekly email of every restaurant and bar about to open in the Valley. <a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free →</a></div>
+<div class="cta"><strong>Sell to restaurants and bars?</strong> The <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert</a> emails you every new filing each weekday morning with the applicant's agent name and a link to the record, weeks before the doors open. $29/month, cancel anytime.</div>
 <h2>{len(venues)} new venues pending</h2><ul>{''.join(row(v) for v in venues) or '<li class="muted">None currently listed.</li>'}</ul>
 <p class="muted">By city: {' · '.join(f"{c} {sum(1 for v in venues if v.get('city')==c)}" for c in CITIES)}</p>
 <h2>Ownership changes at existing venues ({len(transfers)})</h2><ul>{''.join(row(v) for v in transfers)}</ul>
 <h2>Retail beer, wine &amp; liquor ({len(retail)})</h2><ul>{''.join(row(v) for v in retail)}</ul>
-<h2 id="subscribe">Weekly vendor alert</h2>
-<p>Coming soon. For now, the raw data is at <a href="data/new.json">data/new.json</a> and <a href="data/filings.json">data/filings.json</a>.</p>
+<h2 id="subscribe">Get the alerts</h2>
+<p><a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Free weekly roundup</a> for locals · <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert, $29/month</a> for POS reps, distributors, insurers, linen, payroll and anyone else who sells to new restaurants. Raw data: <a href="data/new.json">new.json</a>, <a href="data/filings.json">filings.json</a>.</p>
 <p class="muted">Sources: <a href="https://www.phoenix.gov/administration/departments/cityclerk/programs-services/license-services/new-applications.html">City of Phoenix, Newly Received Liquor License Applications</a> · <a href="https://ww2.scottsdaleaz.gov/council/meeting-information/agendas-minutes">Scottsdale City Council agendas</a> · <a href="https://mesa.legistar.com/Legislation.aspx">Mesa City Council (Legistar)</a>. Public records under A.R.S. Title 4.</p>
 </body></html>"""
 (ROOT / "site").mkdir(exist_ok=True)
@@ -106,13 +107,14 @@ ul{{list-style:none;padding:0}} li{{padding:.7rem 0;border-bottom:1px solid var(
 </style></head><body>
 <h1>New restaurants &amp; bars opening soon in Phoenix &amp; Scottsdale</h1>
 <p class="muted">Sourced daily from City of Phoenix liquor license filings and Scottsdale City Council agendas. A "New" application usually means a venue 1–6 months from opening. Updated {updated}. Not affiliated with the City of Phoenix.</p>
-<div class="cta"><strong>Sell to restaurants and bars?</strong> Get every new filing in your inbox each week, with applicant details and address, before they open. <a href="#subscribe">Weekly alert for vendors →</a></div>
+<div class="cta"><strong>Want this every Thursday?</strong> Free weekly email of every restaurant and bar about to open in the Valley. <a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Subscribe free →</a></div>
+<div class="cta"><strong>Sell to restaurants and bars?</strong> The <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert</a> emails you every new filing each weekday morning with the applicant's agent name and a link to the record, weeks before the doors open. $29/month, cancel anytime.</div>
 <h2>{len(venues)} new venues pending</h2><ul>{''.join(row(v) for v in venues) or '<li class="muted">None currently listed.</li>'}</ul>
 <p class="muted">By city: {' · '.join(f"{c} {sum(1 for v in venues if v.get('city')==c)}" for c in CITIES)}</p>
 <h2>Ownership changes at existing venues ({len(transfers)})</h2><ul>{''.join(row(v) for v in transfers)}</ul>
 <h2>Retail beer, wine &amp; liquor ({len(retail)})</h2><ul>{''.join(row(v) for v in retail)}</ul>
-<h2 id="subscribe">Weekly vendor alert</h2>
-<p>Coming soon. For now, the raw data is at <a href="data/new.json">data/new.json</a> and <a href="data/filings.json">data/filings.json</a>.</p>
+<h2 id="subscribe">Get the alerts</h2>
+<p><a href="https://phxopeningsoon.beehiiv.com" rel="noopener">Free weekly roundup</a> for locals · <a href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Vendor Alert, $29/month</a> for POS reps, distributors, insurers, linen, payroll and anyone else who sells to new restaurants. Raw data: <a href="data/new.json">new.json</a>, <a href="data/filings.json">filings.json</a>.</p>
 <p class="muted">Sources: <a href="https://www.phoenix.gov/administration/departments/cityclerk/programs-services/license-services/new-applications.html">City of Phoenix, Newly Received Liquor License Applications</a> · <a href="https://ww2.scottsdaleaz.gov/council/meeting-information/agendas-minutes">Scottsdale City Council agendas</a>. Public records under A.R.S. Title 4.</p>
 </body></html>"""
 (ROOT / "site").mkdir(exist_ok=True)

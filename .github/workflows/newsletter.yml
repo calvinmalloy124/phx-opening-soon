@@ -12,7 +12,7 @@ on:
         description: "If set, send only to this address (test mode)"
         default: ""
 permissions:
-  contents: read
+  contents: write
 jobs:
   send:
     runs-on: ubuntu-latest
@@ -33,3 +33,16 @@ jobs:
           BEEHIIV_PUB_ID: ${{ secrets.BEEHIIV_PUB_ID }}
           RESEND_KEY: ${{ secrets.RESEND_KEY }}
           TEST_TO: ${{ github.event.inputs.test_to }}
+      - name: Welcome new paid subscribers with the full backlog
+        if: github.event.inputs.test_to == ''
+        run: python send_alerts.py welcome
+        env:
+          BEEHIIV_API_KEY: ${{ secrets.BEEHIIV_PUB_ID_CAL }}
+          BEEHIIV_PUB_ID: ${{ secrets.BEEHIIV_PUB_ID }}
+          RESEND_KEY: ${{ secrets.RESEND_KEY }}
+      - name: Commit welcome ledger
+        run: |
+          git config user.name "alerts-bot"
+          git config user.email "bot@users.noreply.github.com"
+          git add data/paid_seen.json 2>/dev/null || true
+          git diff --cached --quiet || (git commit -m "welcome ledger" && git push)

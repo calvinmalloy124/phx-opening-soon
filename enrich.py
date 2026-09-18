@@ -44,11 +44,18 @@ def phoenix_pdf(url):
     # Arizona DLLC "Local Governing Body Report" layout (OCR'd):
     #   Phone: (602)743-8700 / Email: NAME@GMAIL.COM / AGENT ... Name: FIRST LAST
     m = re.search(r"Phone:\s*(\(?\d{3}\)?[-. ]?\d{3}[-. ]\d{4})", txt)
-    if m: out["phone"] = m.group(1)
+    if m and not re.fullmatch(r"\D*0{3}\D*0{3}\D0{4}", m.group(1)): out["phone"] = m.group(1)
     m = re.search(r"Email:\s*([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})", txt)
     if m: out["email"] = m.group(1).lower()
-    m = re.search(r"AGENT\s*\n+\s*Name:\s*([A-Z][A-Za-z.'\- ]{3,60})", txt)
-    if m: out["agent"] = " ".join(w.capitalize() for w in m.group(1).split())
+    m = re.search(r"AGENT[^\n]{0,10}\n+(?:[^\n]*\n+){0,2}?\s*Name\s*:?\s*([A-Z][A-Za-z.'\- ]{3,60})", txt)
+    if not m: m = re.search(r"(?:Agent|Applicant|Controlling Person)\s*(?:Name)?\s*:?\s*([A-Z][A-Z.'\- ]{5,60})\n", txt)
+    if m:
+        name = " ".join(w.capitalize() for w in m.group(1).split())
+        if not re.search(r"Gender|Address|Phone|Email|Male|Female", name): out["agent"] = name
+    m = re.search(r"Location:\s*([^\n]+)\n+(?:([^\n]+)\n+)?([A-Z][A-Za-z ]+, AZ \d{5})", txt)
+    if m:
+        city = m.group(3).split(",")[0].strip().title()
+        if city and city.lower() != "phoenix": out["venue_city"] = city
     if not out.get("phone"):
         m = PHONE.search(txt)
         if m: out["phone"] = m.group(0)

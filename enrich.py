@@ -11,9 +11,9 @@ import requests
 ROOT = Path(__file__).parent
 FIL = ROOT / "data" / "filings.json"; CACHE = ROOT / "data" / "enrich.json"
 H = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0 Safari/537.36"}
-PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]\d{3}[-. ]\d{4}\b")
+PHONE = re.compile(r"\(?\b\d{3}\)?[-. ]?\d{3}[-. ]\d{4}\b")
 SKIP = ("yelp.", "facebook.", "instagram.", "tripadvisor.", "doordash.", "ubereats.", "grubhub.", "opentable.", "google.", "mapquest.", "phoenix.gov", "scottsdaleaz.gov", "legistar.", "azliquor", "restaurantji", "menupix", "zomato", "foursquare", "loopnet", "crexi", "bizbuysell", "linkedin.")
-MAX_PER_RUN = 3
+MAX_PER_RUN = 15
 
 
 def ocr_pdf(b, pages=2):
@@ -41,13 +41,17 @@ def phoenix_pdf(url):
         print(f"  pdf error {ex}")
         return {}
     out = {}
-    m = PHONE.search(txt)
-    if m: out["phone"] = m.group(0)
-    for pat in [r"(?:Agent|Applicant|Owner|Controlling Person)[^\n:]{0,40}[:\-]\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})",
-                r"(?:Agent|Applicant)[^\n]*\n\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})",
-                r"Name of Applicant[^\n]*\n\s*([A-Z][A-Za-z.'-]+(?:\s+[A-Z][A-Za-z.'-]+){1,3})"]:
-        m = re.search(pat, txt)
-        if m: out["agent"] = m.group(1).strip(); break
+    # Arizona DLLC "Local Governing Body Report" layout (OCR'd):
+    #   Phone: (602)743-8700 / Email: NAME@GMAIL.COM / AGENT ... Name: FIRST LAST
+    m = re.search(r"Phone:\s*(\(?\d{3}\)?[-. ]?\d{3}[-. ]\d{4})", txt)
+    if m: out["phone"] = m.group(1)
+    m = re.search(r"Email:\s*([A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,})", txt)
+    if m: out["email"] = m.group(1).lower()
+    m = re.search(r"AGENT\s*\n+\s*Name:\s*([A-Z][A-Za-z.'\- ]{3,60})", txt)
+    if m: out["agent"] = " ".join(w.capitalize() for w in m.group(1).split())
+    if not out.get("phone"):
+        m = PHONE.search(txt)
+        if m: out["phone"] = m.group(0)
     return out
 
 

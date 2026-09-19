@@ -10,7 +10,24 @@ BRAVE = os.environ.get("BRAVE_KEY") or os.environ.get("BRAVE_API", "")
 H = {"User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/537.36 Chrome/124.0 Safari/537.36"}
 EMAIL = re.compile(r"[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Za-z]{2,}")
 PREF = ("sales", "info", "hello", "contact", "office", "team", "support", "admin")
-SKIP = ("yelp.", "facebook.", "linkedin.", "instagram.", "bbb.org", "manta.", "yellowpages", "mapquest", "google.", "indeed.", "glassdoor", "zoominfo", "dnb.")
+SKIP = ("yelp.", "facebook.", "linkedin.", "instagram.", "bbb.org", "manta.", "yellowpages", "mapquest", "google.", "indeed.", "glassdoor", "zoominfo", "dnb.", "waze.", "visitphoenix", "experiencescottsdale", "beveragetradenetwork", "chamberofcommerce", "buzzfile", "opencorporates", "bizapedia", "wikipedia", "crunchbase", "thomasnet", "yellowbook", "superpages", "nextdoor", "angi.", "homeadvisor", "houzz", "porch.", "birdeye", "trustpilot", "sitejabber", "azcentral", "phoenixnewtimes", "bizjournals", "prnewswire", "businesswire", "restaurantbusinessonline", "nrn.com", "qsrmagazine")
+STOP = {"the", "and", "of", "inc", "llc", "co", "company", "corp", "services", "service", "group", "arizona", "az", "phoenix", "scottsdale", "mesa", "tempe", "chandler", "gilbert", "glendale", "restaurant", "supply", "foods", "food", "distributors", "distributor", "distributing", "wholesale", "insurance", "agency", "cleaning", "hood", "linen", "linens", "refrigeration", "payroll", "signs", "sign", "signage", "pest", "control", "produce", "meat", "seafood", "coffee", "roasters", "fire", "protection", "kitchen", "commercial", "real", "estate", "cpa", "accounting", "tax", "marketing", "media", "systems", "system", "pos", "point", "sale", "solutions"}
+# companies whose generic inbox is a black hole: skip the sequence, flag for the regional-manager route
+NATIONAL = ("us foods", "sysco", "southern glazer", "hensley", "young's market", "breakthru", "cintas", "ecolab", "performance foodservice", "shamrock", "paycom", "alsco", "fastsigns", "restaurant depot", "chefs' warehouse", "toast", "square", "clover")
+
+def _tokens(name):
+    words = re.findall(r"[a-z0-9]+", name.lower())
+    toks = {w for w in words if len(w) >= 3 and w not in STOP}
+    if len(words) >= 3: toks.add("".join(w[0] for w in words))
+    return toks
+
+def _relevant(url, company):
+    toks = _tokens(company)
+    if not toks: return True
+    m = re.match(r"https?://(?:www\.)?([^/]+)", url or "")
+    if not m: return False
+    host = m.group(1).split(".")[0].lower().replace("-", "")
+    return any(t in host for t in toks)
 
 
 def brave(q):
@@ -21,7 +38,7 @@ def brave(q):
 
 def site_for(company, city):
     for u in brave(f"{company} {city} AZ"):
-        if not any(s in u for s in SKIP): return u.split("?")[0]
+        if not any(s in u.lower() for s in SKIP) and _relevant(u, company): return u.split("?")[0]
     return ""
 
 
@@ -45,6 +62,8 @@ def main():
     out = []
     for r in rows:
         if r["company"] in done: out.append(done[r["company"]]); continue
+        if any(n in r["company"].lower() for n in NATIONAL):
+            out.append({**r, "website": "", "email": "", "status": "national"}); continue
         site = site_for(r["company"], r["city"]); em = emails_on(site) if site else []
         out.append({**r, "website": site, "email": em[0] if em else "", "status": "ready" if em else "no-email"})
         print(r["company"], "->", site, em[:1])

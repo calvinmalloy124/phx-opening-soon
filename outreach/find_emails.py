@@ -42,6 +42,50 @@ def site_for(company, city):
     return ""
 
 
+TEAM_PATHS = ("/team", "/our-team", "/about", "/about-us", "/meet-the-team", "/staff", "/leadership", "/contact", "/contact-us")
+ROLE = re.compile(r"\b(owner|founder|president|ceo|principal|partner|general manager|sales manager|director of sales|vp of sales|vice president of sales|account executive|account manager|sales rep(?:resentative)?|business development|territory manager|regional manager|branch manager|managing partner)\b", re.I)
+NAME = re.compile(r"\b([A-Z][a-z]{1,15}) ([A-Z][a-z]{1,20})\b")
+NOISE = {"Contact Us", "About Us", "Our Team", "Learn More", "Read More", "Privacy Policy", "Terms Of", "All Rights", "Get Started", "Free Quote", "Call Now", "Follow Us", "Meet The", "Our Story", "Sign Up", "Serving The", "Request Quote"}
+
+
+def find_person(site):
+    """Return (first, last, title, email_hint) for the most sales-relevant named person on the site's team/about pages."""
+    base = re.match(r"https?://[^/]+", site).group(0); dom = base.split("//")[1].replace("www.", "")
+    best = None; pattern = None
+    for path in TEAM_PATHS:
+        try: html = requests.get(base + path, headers=H, timeout=20).text
+        except Exception: continue
+        text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", html, flags=re.S); text = re.sub(r"<[^>]+>", "\n", text)
+        for m in ROLE.finditer(text):
+            before = text[max(0, m.start() - 80): m.start()]
+            cands = [nm for nm in NAME.finditer(before) if nm.group(0) not in NOISE and not any(w in nm.group(0) for w in ("Phoenix", "Arizona", "Scottsdale", "Mesa", "Tempe"))]
+            if not cands:
+                after = text[m.end(): m.end() + 60]
+                cands = [nm for nm in NAME.finditer(after) if nm.group(0) not in NOISE]
+                if not cands: continue
+                nm = cands[0]
+            else:
+                nm = cands[-1]   # the name closest to (just before) the role
+            score = 3 if re.search(r"sales|account|business development|territory|regional", m.group(0), re.I) else (2 if re.search(r"owner|founder|president|ceo|principal|partner", m.group(0), re.I) else 1)
+            if best is None or score > best[0]: best = (score, nm.group(1), nm.group(2), m.group(0))
+        # learn the address pattern from any personal email on the site (raw html: mailto: links count)
+        for e in EMAIL.findall(html):
+            e = e.lower()
+            if not (e.endswith("@" + dom) or e.endswith("." + dom)): continue
+            local = e.split("@")[0]
+            if local in PREF or local in ("noreply", "no-reply", "webmaster", "careers", "jobs", "billing", "accounting", "hr"): continue
+            if "." in local: pattern = "first.last"
+            elif len(local) > 2: pattern = "first" if not any(ch.isdigit() for ch in local) else pattern
+        time.sleep(1)
+        if best and pattern: break
+    if not best: return None
+    _, first, last, title = best
+    email = ""
+    if pattern == "first.last": email = f"{first.lower()}.{last.lower()}@{dom}"
+    elif pattern == "first": email = f"{first.lower()}@{dom}"
+    return first, last, title, email
+
+
 def emails_on(site):
     found = set(); base = re.match(r"https?://[^/]+", site).group(0)
     dom = base.split("//")[1].replace("www.", "")
@@ -65,11 +109,18 @@ def main():
         if any(n in r["company"].lower() for n in NATIONAL):
             out.append({**r, "website": "", "email": "", "status": "national"}); continue
         site = site_for(r["company"], r["city"]); em = emails_on(site) if site else []
-        out.append({**r, "website": site, "email": em[0] if em else "", "status": "ready" if em else "no-email"})
+        person = find_person(site) if site else None
+        first = person[0] if person else ""; title = person[2] if person else ""
+        # prefer a named person's address when the site confirmed the pattern; else the generic inbox, addressed to the person if we found one
+        addr = person[3] if (person and person[3]) else (em[0] if em else "")
+        out.append({**r, "website": site, "email": addr, "contact_first": first, "contact_title": title, "status": "ready" if addr else "no-email"})
         print(r["company"], "->", site, em[:1])
         if len(out) - len(done) >= 25: break   # gentle: 25 per run
     with open("data/vendors_enriched.csv", "w", newline="") as f:
-        w = csv.DictWriter(f, fieldnames=["category", "company", "phone", "city", "website", "email", "status"]); w.writeheader(); w.writerows(out + [done[c] for c in done if c not in {o["company"] for o in out}])
+        fields = ["category", "company", "phone", "city", "website", "email", "contact_first", "contact_title", "status"]
+        w = csv.DictWriter(f, fieldnames=fields, extrasaction="ignore"); w.writeheader()
+        for row in out + [done[c] for c in done if c not in {o["company"] for o in out}]:
+            w.writerow({k: row.get(k, "") for k in fields})
 
 
 if __name__ == "__main__":

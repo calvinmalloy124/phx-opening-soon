@@ -1,26 +1,51 @@
-category,company,phone,city,website,email,status
-POS,Cervion Systems,877-476-7246,Phoenix,https://www.cervion.com/contact,sales@cervion.com,ready
-POS,DINEamics Restaurant POS,800-272-1479,Phoenix,https://www.dineamics.com/,info@dineamics.com,ready
-Food distributor,Shamrock Foods,855-397-4255,Phoenix,https://www.shamrockfsw.com/locations/phoenix-az/,,no-email
-Food distributor,Performance Foodservice Arizona,480-705-3000,Phoenix,https://www.performancefoodservice.com/our-locations/arizona,,no-email
-Food distributor,US Foods Phoenix,602-269-7241,Phoenix,https://www.usfoods.com/products-we-offer/new-and-innovative/stock-yards-collective/locations/phoenix-az,,no-email
-Food distributor,US Foods Systems,800-716-7691,Phoenix,https://www.waze.com/live-map/directions/us/az/phoenix/us-foods-systems,bizdev@waze.com,bad-email
-Food distributor,Total Source Foodservice,602-231-8638,Phoenix,https://arizonafoodservicenetwork.com/directory/name/total-source/,,no-email
-Food distributor,M&D Distributing,602-235-0078,Phoenix,https://mnddistributors.com/,,no-email
-Food distributor,Premier Foods Inc,602-253-2834,Phoenix,https://local.yahoo.com/info-43407942-Premier-Foods-Inc/,,no-email
-Food distributor,Uniko Foodservice,602-278-0232,Tolleson,https://www.chamberofcommerce.com/business-directory/arizona/tolleson/food-products-supplier/2008188882-uniko-foodservice,,no-email
-Food distributor,S & S Gourmet Distributors,602-438-9240,Phoenix,https://www.ssgourmet.com/,customerservice@ssgourmet.com,ready
-Food distributor,Custom Food Service,602-254-1876,Phoenix,https://customfoodservice.com/,,no-email
-Beverage distributor,Breakthru Beverage Arizona,602-760-5500,Phoenix,https://www.breakthrubev.com/locations/arizona,,no-email
-Beverage distributor,Southern Glazer's Wine & Spirits,602-533-8000,Phoenix,https://www.experiencescottsdale.com/listing/southern-glazers-wine-&-spirits/52079/,adunaway@experiencescottsdale.com,bad-email
-Beverage distributor,Hensley Beverage Company,602-264-1635,Phoenix,https://www.visitphoenix.com/listing/hensley-beverage-company/1336/,aflink@visitphoenix.com,bad-email
-Beverage distributor,Young's Market Company,602-233-1900,Phoenix,https://beveragetradenetwork.com/en/news/other-84/youngs-market-company-opens-new-arizona-headquarters-3132.htm,info@beveragetradenetwork.com,bad-email
-Beverage distributor,Action Wine & Spirits,480-661-3900,Phoenix,https://www.actionwine.com/,info@actionwine.com,ready
-Beverage distributor,Silesia Brands,480-980-4080,Phoenix,https://silesiabrands.com/,,no-email
-Beverage distributor,Beer and Wine Distributors of Arizona,602-283-1036,Phoenix,https://business.phoenixchamber.com/list/member/beer-wine-distributors-of-arizona-phoenix-37869,,no-email
-Insurance,Bar and Restaurant Insurance (Ambassador),480-776-6981,Phoenix,https://www.azcentral.com/story/news/local/phoenix/2019/04/04/bar-and-restaurant-insurance-the-ambassador-group-phoenix/2853256002/,,no-email
-Insurance,Contractors Insurance Agency,480-804-0707,Phoenix,https://www.ciacoverage.com/,info@ciacoverage.com,ready
-Insurance,Brown & Brown Insurance of Arizona,602-277-6672,Phoenix,https://business.phoenixchamber.com/list/member/brown-brown-insurance-of-arizona-inc-1724,,no-email
-Insurance,Arizona Preferred Insurance,602-266-0020,Phoenix,https://agency.nationwide.com/az/phoenix/85016/arizona-preferred-insurance-agency-inc,,no-email
-Linen,Spectex AZ,602-730-4444,Phoenix,https://spectexaz.com/contact-us,,no-email
-Linen,Specialty Textile Services,602-252-9230,Phoenix,https://specialtytextileservices.com/,,no-email
+category,company,phone,city,website,email,contact_first,contact_title,status
+POS,Cervion Systems,877-476-7246,Phoenix,https://www.cervion.com/contact,sales@cervion.com,,,ready
+POS,DINEamics Restaurant POS,800-272-1479,Phoenix,https://www.dineamics.com/,info@dineamics.com,,,ready
+Food distributor,Shamrock Foods,855-397-4255,Phoenix,https://www.shamrockfsw.com/locations/phoenix-az/,,,,no-email
+Food distributor,Performance Foodservice Arizona,480-705-3000,Phoenix,https://www.performancefoodservice.com/our-locations/arizona,,,,no-email
+Food distributor,US Foods Phoenix,602-269-7241,Phoenix,https://www.usfoods.com/products-we-offer/new-and-innovative/stock-yards-collective/locations/phoenix-az,,,,no-email
+Food distributor,US Foods Systems,800-716-7691,Phoenix,https://www.waze.com/live-map/directions/us/az/phoenix/us-foods-systems,bizdev@waze.com,,,bad-email
+Food distributor,Total Source Foodservice,602-231-8638,Phoenix,https://arizonafoodservicenetwork.com/directory/name/total-source/,,,,no-email
+Food distributor,M&D Distributing,602-235-0078,Phoenix,https://mnddistributors.com/,,,,no-email
+Food distributor,Premier Foods Inc,602-253-2834,Phoenix,https://local.yahoo.com/info-43407942-Premier-Foods-Inc/,,,,no-email
+Food distributor,Uniko Foodservice,602-278-0232,Tolleson,https://www.chamberofcommerce.com/business-directory/arizona/tolleson/food-products-supplier/2008188882-uniko-foodservice,,,,no-email
+Food distributor,S & S Gourmet Distributors,602-438-9240,Phoenix,https://www.ssgourmet.com/,customerservice@ssgourmet.com,,,ready
+Food distributor,Custom Food Service,602-254-1876,Phoenix,https://customfoodservice.com/,,,,no-email
+Beverage distributor,Breakthru Beverage Arizona,602-760-5500,Phoenix,https://www.breakthrubev.com/locations/arizona,,,,no-email
+Beverage distributor,Southern Glazer's Wine & Spirits,602-533-8000,Phoenix,https://www.experiencescottsdale.com/listing/southern-glazers-wine-&-spirits/52079/,adunaway@experiencescottsdale.com,,,bad-email
+Beverage distributor,Hensley Beverage Company,602-264-1635,Phoenix,https://www.visitphoenix.com/listing/hensley-beverage-company/1336/,aflink@visitphoenix.com,,,bad-email
+Beverage distributor,Young's Market Company,602-233-1900,Phoenix,https://beveragetradenetwork.com/en/news/other-84/youngs-market-company-opens-new-arizona-headquarters-3132.htm,info@beveragetradenetwork.com,,,bad-email
+Beverage distributor,Action Wine & Spirits,480-661-3900,Phoenix,https://www.actionwine.com/,info@actionwine.com,,,ready
+Beverage distributor,Silesia Brands,480-980-4080,Phoenix,https://silesiabrands.com/,,,,no-email
+Beverage distributor,Beer and Wine Distributors of Arizona,602-283-1036,Phoenix,https://business.phoenixchamber.com/list/member/beer-wine-distributors-of-arizona-phoenix-37869,,,,no-email
+Insurance,Bar and Restaurant Insurance (Ambassador),480-776-6981,Phoenix,https://www.azcentral.com/story/news/local/phoenix/2019/04/04/bar-and-restaurant-insurance-the-ambassador-group-phoenix/2853256002/,,,,no-email
+Insurance,Contractors Insurance Agency,480-804-0707,Phoenix,https://www.ciacoverage.com/,info@ciacoverage.com,,,ready
+Insurance,Brown & Brown Insurance of Arizona,602-277-6672,Phoenix,https://business.phoenixchamber.com/list/member/brown-brown-insurance-of-arizona-inc-1724,,,,no-email
+Insurance,Arizona Preferred Insurance,602-266-0020,Phoenix,https://agency.nationwide.com/az/phoenix/85016/arizona-preferred-insurance-agency-inc,,,,no-email
+Linen,Spectex AZ,602-730-4444,Phoenix,https://spectexaz.com/contact-us,,,,no-email
+Linen,Specialty Textile Services,602-252-9230,Phoenix,https://specialtytextileservices.com/,,,,no-email
+Linen,Mission Linen and Uniform Service,602-271-9114,Phoenix,https://www.missionlinen.com/locate-us/phoenix-az-industrial/,,John,President,no-email
+Linen,Brubaker Linens,602-492-1385,Phoenix,https://www.brubakerlinens.com/about,info@brubakerlinens.com,,,ready
+Linen,Mastel Linen,602-278-8997,Phoenix,https://www.mastellinen.com/,,,,no-email
+Linen,CORE Linen Services,602-437-1051,Phoenix,https://www.corelinen.com/medical-linen-services-in-phoenix-arizona/,inquiries@corelinen.com,,,ready
+Hood cleaning,Optimal Hood Cleaning,480-738-3142,Phoenix,https://optimalhoodcleaning.com/,,,,no-email
+Hood cleaning,A&S Hood Exhaust Cleaning,602-692-2861,Phoenix,https://aandshoodexhaustcleaningllc.com/,,,,no-email
+Hood cleaning,Phx Hood Cleaning,602-960-7700,Phoenix,,,,,no-email
+Hood cleaning,Sun Devil Hood & Exhaust Cleaning,602-900-8060,Phoenix,https://www.sundevilhoods.com/,info@sundevilhoods.com,Alex,Account Manager,ready
+Hood cleaning,Kitchen Guard of Phoenix,602-536-4663,Phoenix,https://kitchenguard.com/phoenix/,kitchen.guard@kitchenguard.com,Kitchen,Regional Manager,ready
+Hood cleaning,Hood Hero,602-341-3163,Gilbert,https://hoodhero.com/hood-cleaning-gilbert/,hood@hoodhero.com,Hood,partner,ready
+Hood cleaning,Phoenix Hood Cleaning Company,602-755-6925,Cave Creek,,,,,no-email
+Equipment,Standard Restaurant Supply Phoenix,602-275-8550,Phoenix,https://www.standardrestaurant.com/locations/phoenix-arizona/,info@standardrestaurant.com,,,ready
+Equipment,Standard Restaurant Supply Mesa,480-776-3599,Mesa,https://www.standardrestaurant.com/locations/mesa-arizona/,info@standardrestaurant.com,,,ready
+Equipment,EEL Economic Used Restaurant Equipment,480-448-2875,Phoenix,https://www.eeleconomicrestaurantequipment.com/,,Amando,Founder,no-email
+Equipment,Premier Restaurant Supply and Service,602-675-2968,Phoenix,https://www.premierphx.com/,sales@premierphx.com,,,ready
+Equipment,All Used Restaurant Equipment,602-997-6711,Phoenix,https://www.allusedrestaurantequipment.com/,,,,no-email
+Equipment,Southwest Restaurant Supply,602-978-6711,Phoenix,https://www.southwestrestaurantsupply.com/,,,,no-email
+Equipment,Alida Restaurant Supply,602-863-0688,Phoenix,https://www.myalida.com/,info@myalida.com,,,ready
+Equipment,Phoenix Used Restaurant Equipment,602-471-9749,Glendale,https://www.allusedrestaurantequipment.com/,,,,no-email
+Refrigeration,Commercial Refrigeration Service Inc,623-869-8881,Phoenix,,,,,no-email
+Refrigeration,Platinum Refrigeration,602-675-3906,Phoenix,https://platinumrefrigeration.com/,info@platinumrefrigeration.com,,,ready
+Refrigeration,AccuTemp Refrigeration,602-957-3745,Phoenix,https://accutempaz.com/,,Current,Business Development,no-email
+Refrigeration,Frost Refrigeration Engineering,602-657-3835,Phoenix,https://www.frostref.com/,,,,no-email
+Refrigeration,Arizona Refrigeration Service,602-905-2621,Tempe,,,,,no-email
+Refrigeration,Adams Refrigeration,602-269-6447,Phoenix,https://adamsrefrig.com/,support@adamsrefrig.com,,,ready

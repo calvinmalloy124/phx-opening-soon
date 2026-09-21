@@ -1,4 +1,288 @@
-{
- "012": [],
- "006": []
-}
+[
+ [
+  "Job Number\n\u21f5",
+  "License Number\n\u21f5",
+  "Business Name\n\u21f5",
+  "Licensee Name\n\u21f5",
+  "City\n\u21f5",
+  "County\n\u21f5",
+  "Zip\n\u21f5",
+  "Type\n\u21f5",
+  "Accepted Date\n\u21f5"
+ ],
+ [
+  "414599",
+  "",
+  "LOS HERMANOS",
+  "",
+  "BISBEE",
+  "",
+  "85603",
+  "",
+  "9/19/2026"
+ ],
+ [
+  "414586",
+  "",
+  "EL RODEO MEXICAN FOOD",
+  "",
+  "GREEN VALLEY",
+  "",
+  "85614",
+  "",
+  "9/18/2026"
+ ],
+ [
+  "414560",
+  "",
+  "CALIENTE SOCIAL CLUB (CLUBHOUSE)",
+  "",
+  "FLORENCE",
+  "",
+  "85132",
+  "",
+  "9/18/2026"
+ ],
+ [
+  "414558",
+  "",
+  "CALIENTE SOCIAL CLUB (CLUBHOUSE)",
+  "",
+  "FLORENCE",
+  "",
+  "85132",
+  "",
+  "9/18/2026"
+ ],
+ [
+  "414580",
+  "06090026",
+  "BLACK BULL RESTAURANT & SPORTS LOUNGE",
+  "",
+  "SHOW LOW",
+  "Navajo",
+  "85901",
+  "Bar",
+  "9/18/2026"
+ ],
+ [
+  "414556",
+  "",
+  "PROVINCE COMMUNITY ASSOCIATION",
+  "",
+  "MARICOPA",
+  "",
+  "85138",
+  "",
+  "9/18/2026"
+ ],
+ [
+  "414457",
+  "",
+  "HANSEN'S COWBOY BBQ",
+  "",
+  "CAVE CREEK",
+  "",
+  "85331",
+  "",
+  "9/17/2026"
+ ],
+ [
+  "414452",
+  "",
+  "ROOSEVELT MARINA",
+  "",
+  "ROOSEVELT",
+  "",
+  "85545",
+  "",
+  "9/17/2026"
+ ],
+ [
+  "414425",
+  "06040052",
+  "ROOSEVELT MARINA",
+  "",
+  "ROOSEVELT",
+  "Gila",
+  "85545",
+  "Bar",
+  "9/17/2026"
+ ],
+ [
+  "414370",
+  "",
+  "FLYING E SALOON",
+  "",
+  "WICKENBURG",
+  "",
+  "85390",
+  "",
+  "9/16/2026"
+ ],
+ [
+  "414281",
+  "",
+  "TACOS Y MARISCOS TOPOLOBAMPO",
+  "",
+  "PHOENIX",
+  "",
+  "85009",
+  "",
+  "9/16/2026"
+ ],
+ [
+  "414400",
+  "",
+  "MODERN CORNER GRILL",
+  "",
+  "SCOTTSDALE",
+  "",
+  "85255",
+  "",
+  "9/15/2026"
+ ],
+ [
+  "414498",
+  "",
+  "VOLANTI RESTAURANT AND LOUNGE",
+  "",
+  "SCOTTSDALE",
+  "",
+  "85260",
+  "",
+  "9/15/2026"
+ ],
+ [
+  "414237",
+  "",
+  "THAI BASIL SCOTTSDALE",
+  "",
+  "SCOTTSDALE",
+  "",
+  "85255",
+  "",
+  "9/15/2026"
+ ],
+ [
+  "414251",
+  "",
+  "HITCHING POST RESTAURANT",
+  "",
+  "SEDONA",
+  "",
+  "86336",
+  "",
+  "9/15/2026"
+ ],
+ [
+  "414393",
+  "",
+  "CRAZY HORSE CAMPGROUNDS",
+  "",
+  "LAKE HAVASU CITY",
+  "",
+  "86403",
+  "",
+  "9/15/2026"
+ ],
+ [
+  "414288",
+  "",
+  "ANTHEM PARKSIDE AT MERRILL RANCH COMMUNITY ASSOCIATION INC",
+  "",
+  "FLORENCE",
+  "",
+  "85132",
+  "",
+  "9/15/2026"
+ ],
+ [
+  "414073",
+  "",
+  "DOUBLE D'S SPORTS BAR",
+  "",
+  "YUMA",
+  "",
+  "85364",
+  "",
+  "9/14/2026"
+ ],
+ [
+  "414133",
+  "",
+  "BETMGM SPORTSBOOK",
+  "",
+  "GLENDALE",
+  "",
+  "85305",
+  "",
+  "9/14/2026"
+ ],
+ [
+  "414071",
+  "06140002",
+  "DOUBLE D'S SPORTS BAR",
+  "",
+  "YUMA",
+  "Yuma",
+  "85364",
+  "Bar",
+  "9/14/2026"
+ ],
+ [
+  "414115",
+  "",
+  "DEMAGGIO'S UPTOWN",
+  "",
+  "PHOENIX",
+  "",
+  "85012",
+  "",
+  "9/14/2026"
+ ],
+ [
+  "414048",
+  "07100240",
+  "HAMPTON INN TUCSON AIRPORT",
+  "",
+  "TUCSON",
+  "Pima",
+  "85756",
+  "Beer and Wine Bar",
+  "9/14/2026"
+ ],
+ [
+  "410931",
+  "",
+  "ALDEN",
+  "",
+  "PHOENIX",
+  "",
+  "85004",
+  "",
+  "9/11/2026"
+ ],
+ [
+  "413451",
+  "",
+  "CURRIES",
+  "",
+  "YUMA",
+  "",
+  "85365",
+  "",
+  "9/11/2026"
+ ],
+ [
+  "413831",
+  "",
+  "THE BRA SPA",
+  "",
+  "TUCSON",
+  "",
+  "85715",
+  "",
+  "9/10/2026"
+ ]
+]

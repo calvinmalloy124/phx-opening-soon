@@ -55,19 +55,39 @@ async def run_one(frame, pg, typ):
             except Exception as ex: chosen["issued_start_err"] = str(ex)[:80]
     print("INPUTS:", names[:20])
     print("CHOSEN:", chosen)
-    btn = frame.get_by_role("button", name=re.compile("search", re.I))
-    await btn.first.click()
-    await pg.wait_for_timeout(9000)
-    rows = []
-    for t in await frame.locator("table").all():
-        for tr in await t.locator("tr").all():
-            cells = await tr.locator("th,td").all_inner_texts()
-            if cells: rows.append([c.strip() for c in cells])
-    print(f"TYPE {typ}: tables={await frame.locator('table').count()} rows={len(rows)}")
-    for r in rows[:6]: print("  ", r)
+    btns = await frame.locator("button, input[type=button], input[type=submit]").all()
+    labels = []
+    for b in btns:
+        labels.append(((await b.inner_text()) or (await b.get_attribute("value")) or "").strip())
+    print("BUTTONS:", labels)
+    async def do_search():
+        target = None
+        for b, l in zip(btns, labels):
+            if re.search(r"search", l, re.I) and not re.search(r"clear|reset", l, re.I): target = b; break
+        if target is None: target = btns[0]
+        await target.click()
+        for _ in range(30):   # up to 30s for results
+            await pg.wait_for_timeout(1000)
+            if await frame.locator("table").count() > 0 or await frame.locator("text=/result|found|records|no .*match/i").count() > 0: break
+        rows = []
+        for t in await frame.locator("table").all():
+            for tr in await t.locator("tr").all():
+                cells = await tr.locator("th,td").all_inner_texts()
+                if cells: rows.append([c.strip() for c in cells])
+        return rows
+    rows = await do_search()
     if not rows:
-        txt = await frame.locator("body").inner_text()
-        print("BODY:", txt[-1500:])
+        print("no rows with date filter; retrying without dates")
+        for i in await frame.locator("input").all():
+            nm = (await i.get_attribute("id") or "")
+            if nm in ("startDate", "endDate"): await i.fill("")
+        rows = await do_search()
+    print(f"TYPE {typ}: tables={await frame.locator('table').count()} rows={len(rows)}")
+    for r in rows[:8]: print("  ", r)
+    txt = await frame.locator("body").inner_text()
+    i = txt.find("Search Filters"); j = txt.find("020 -")
+    print("BODY-HEAD:", txt[:600].replace("\n", " | "))
+    print("BODY-AFTER-FILTERS:", txt[j+6: j+2500].replace("\n", " | ") if j >= 0 else txt[-2500:])
     return rows
 
 

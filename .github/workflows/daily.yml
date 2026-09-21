@@ -15,8 +15,11 @@ jobs:
       - uses: actions/setup-python@v5
         with: { python-version: "3.12" }
       - run: sudo apt-get update -qq && sudo apt-get install -y -qq tesseract-ocr poppler-utils > /dev/null
-      - run: pip install -r requirements.txt pytesseract pdf2image
+      - run: pip install -r requirements.txt pytesseract pdf2image playwright && python -m playwright install --with-deps chromium
+      - name: Statewide pending applications (AZ DLLC)
+        run: python statewide.py || echo 'statewide fetch failed; continuing'
       - run: python scrape.py
+      - run: python merge_statewide.py
       - run: python enrich.py
         env:
           BRAVE_KEY: ${{ secrets.BRAVE_API }}

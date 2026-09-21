@@ -46,9 +46,18 @@ TEAM_PATHS = ("/team", "/our-team", "/about", "/about-us", "/meet-the-team", "/s
 ROLE = re.compile(r"\b(owner|founder|president|ceo|principal|partner|general manager|sales manager|director of sales|vp of sales|vice president of sales|account executive|account manager|sales rep(?:resentative)?|business development|territory manager|regional manager|branch manager|managing partner)\b", re.I)
 NAME = re.compile(r"\b([A-Z][a-z]{1,15}) ([A-Z][a-z]{1,20})\b")
 NOISE = {"Contact Us", "About Us", "Our Team", "Learn More", "Read More", "Privacy Policy", "Terms Of", "All Rights", "Get Started", "Free Quote", "Call Now", "Follow Us", "Meet The", "Our Story", "Sign Up", "Serving The", "Request Quote"}
+NOTNAME = {"Current", "Kitchen", "Hood", "Our", "Your", "The", "Meet", "Learn", "Get", "View", "Open", "Job", "Jobs", "Career", "Careers", "Apply", "Request", "Free", "Best", "Top", "Local", "Family", "Owned", "Serving", "Licensed", "Bonded", "Insured", "Trusted", "Quality", "Service", "Services", "Commercial", "Residential", "Contact", "About", "Home", "Team", "Staff", "Leadership", "Company", "General", "Sales", "Account", "Business", "Regional", "Territory", "Branch", "Managing", "Vice", "President", "Director", "Manager", "Owner", "Founder", "Read", "More", "Click", "Here", "Call", "Email", "Phone", "Office", "Hours", "Monday", "Friday", "Saturday", "Sunday", "Arizona", "Phoenix", "Scottsdale", "Mesa", "Tempe", "Chandler", "Gilbert", "Glendale", "Valley", "North", "South", "East", "West", "New", "Restaurant", "Food", "Fire", "Pest", "Linen", "Sign", "Signs", "Coffee", "Produce", "Meat", "Ice", "Wine", "Beer", "Since", "Years", "Experience", "Proudly", "Locally", "Veteran", "Women", "Certified", "Member", "Partner", "Partners", "Group", "Inc", "Llc", "Customer", "Client", "Clients", "Reviews", "Testimonials", "Gallery", "Blog", "News", "Faq", "Menu", "Search", "Login", "Book", "Schedule", "Now", "Today", "Us", "Me", "We", "Where", "What", "Why", "How", "Who"}
 
 
-def find_person(site):
+def _ok_name(nm, company):
+    first, last = nm.group(1), nm.group(2)
+    if nm.group(0) in NOISE or first in NOTNAME or last in NOTNAME: return False
+    ctoks = {w.lower() for w in re.findall(r"[A-Za-z]+", company)}
+    if first.lower() in ctoks or last.lower() in ctoks: return False
+    return True
+
+
+def find_person(site, company=""):
     """Return (first, last, title, email_hint) for the most sales-relevant named person on the site's team/about pages."""
     base = re.match(r"https?://[^/]+", site).group(0); dom = base.split("//")[1].replace("www.", "")
     best = None; pattern = None
@@ -58,10 +67,10 @@ def find_person(site):
         text = re.sub(r"<script.*?</script>|<style.*?</style>", " ", html, flags=re.S); text = re.sub(r"<[^>]+>", "\n", text)
         for m in ROLE.finditer(text):
             before = text[max(0, m.start() - 80): m.start()]
-            cands = [nm for nm in NAME.finditer(before) if nm.group(0) not in NOISE and not any(w in nm.group(0) for w in ("Phoenix", "Arizona", "Scottsdale", "Mesa", "Tempe"))]
+            cands = [nm for nm in NAME.finditer(before) if _ok_name(nm, company)]
             if not cands:
                 after = text[m.end(): m.end() + 60]
-                cands = [nm for nm in NAME.finditer(after) if nm.group(0) not in NOISE]
+                cands = [nm for nm in NAME.finditer(after) if _ok_name(nm, company)]
                 if not cands: continue
                 nm = cands[0]
             else:
@@ -109,7 +118,7 @@ def main():
         if any(n in r["company"].lower() for n in NATIONAL):
             out.append({**r, "website": "", "email": "", "status": "national"}); continue
         site = site_for(r["company"], r["city"]); em = emails_on(site) if site else []
-        person = find_person(site) if site else None
+        person = find_person(site, r["company"]) if site else None
         first = person[0] if person else ""; title = person[2] if person else ""
         # prefer a named person's address when the site confirmed the pattern; else the generic inbox, addressed to the person if we found one
         addr = person[3] if (person and person[3]) else (em[0] if em else "")

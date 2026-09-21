@@ -1,14 +1,74 @@
 """
-Statewide Arizona liquor applications from the DLLC License Search (Google Apps Script UI).
-Drives the app with Playwright, filters Status=Pending, dumps results to data/statewide_raw.json.
-First version is exploratory: it logs the page structure so we can lock the selectors.
+Statewide Arizona newly-issued liquor licenses from the DLLC License Search (Google Apps Script UI).
+Drives the app with Playwright: Status=Active, issued in the last N days, restaurant/bar-type licenses.
+Writes data/statewide_raw.json (rows) and logs structure for parser tuning.
 """
 import asyncio, json, os, re, sys
+from datetime import date, timedelta
 from pathlib import Path
 from playwright.async_api import async_playwright
 
 URL = "https://script.google.com/a/macros/azliquor.gov/s/AKfycbxt14jd49w9bJBu9s4qYFJIh9nq0cgHX2WJCTSmlhbYTPGlOJZhn5bIFSB_MOD-ELMgpA/exec?origin=https%3A%2F%2Fliquor.az.gov"
 OUT = Path("data/statewide_raw.json")
+DAYS = int(os.environ.get("DAYS", "30"))
+TYPES = ["012", "006", "007", "011", "019", "003"]   # restaurant, bar, beer&wine bar, hotel, tasting room, microbrewery
+
+
+async def app_frame(pg):
+    for _ in range(20):
+        for f in pg.frames:
+            try:
+                if await f.locator("select").count() > 0: return f
+            except Exception: pass
+        await pg.wait_for_timeout(1000)
+    return None
+
+
+async def pick(frame, sel, pred):
+    opts = await sel.locator("option").all_inner_texts()
+    for o in opts:
+        if pred(o): await sel.select_option(label=o); return o
+    return None
+
+
+async def run_one(frame, pg, typ):
+    sels = await frame.locator("select").all()
+    chosen = {}
+    for s in sels:
+        opts = await s.locator("option").all_inner_texts()
+        joined = " | ".join(opts).lower()
+        if "active" in joined and "expired" in joined:
+            chosen["status"] = await pick(frame, s, lambda o: o.strip().lower() == "active")
+        elif any(o.strip().startswith(typ) for o in opts):
+            chosen["type"] = await pick(frame, s, lambda o: o.strip().startswith(typ))
+    # issue date range: try common input ids/labels
+    start = (date.today() - timedelta(days=DAYS)).strftime("%m/%d/%Y")
+    inputs = await frame.locator("input").all()
+    names = []
+    for i in inputs:
+        nm = (await i.get_attribute("id") or "") + "|" + (await i.get_attribute("name") or "") + "|" + (await i.get_attribute("placeholder") or "") + "|" + (await i.get_attribute("type") or "")
+        names.append(nm)
+        if re.search(r"issue|issued|start|from", nm, re.I) and not re.search(r"end|to\b", nm, re.I):
+            try:
+                await i.fill(start if "date" not in nm.lower().split("|")[-1] else (date.today() - timedelta(days=DAYS)).isoformat())
+                chosen["issued_start"] = start
+            except Exception as ex: chosen["issued_start_err"] = str(ex)[:80]
+    print("INPUTS:", names[:20])
+    print("CHOSEN:", chosen)
+    btn = frame.get_by_role("button", name=re.compile("search", re.I))
+    await btn.first.click()
+    await pg.wait_for_timeout(9000)
+    rows = []
+    for t in await frame.locator("table").all():
+        for tr in await t.locator("tr").all():
+            cells = await tr.locator("th,td").all_inner_texts()
+            if cells: rows.append([c.strip() for c in cells])
+    print(f"TYPE {typ}: tables={await frame.locator('table').count()} rows={len(rows)}")
+    for r in rows[:6]: print("  ", r)
+    if not rows:
+        txt = await frame.locator("body").inner_text()
+        print("BODY:", txt[-1500:])
+    return rows
 
 
 async def main():
@@ -16,46 +76,17 @@ async def main():
         b = await p.chromium.launch()
         pg = await b.new_page(viewport={"width": 1400, "height": 1000})
         await pg.goto(URL, wait_until="networkidle", timeout=90000)
-        await pg.wait_for_timeout(4000)
-        # the app renders inside nested iframes (sandboxFrame -> userHtmlFrame)
-        frame = None
-        for f in pg.frames:
+        frame = await app_frame(pg)
+        if frame is None: print("no app frame"); await b.close(); return
+        allrows = {}
+        for typ in TYPES[: int(os.environ.get("MAX_TYPES", "2"))]:
             try:
-                if await f.locator("select").count() > 0: frame = f; break
-            except Exception: pass
-        if frame is None:
-            print("no frame with selects; frames:", [f.url[:80] for f in pg.frames]); await b.close(); return
-        sels = await frame.locator("select").all()
-        info = []
-        for s in sels:
-            opts = await s.locator("option").all_inner_texts()
-            info.append({"id": await s.get_attribute("id"), "name": await s.get_attribute("name"), "options": opts[:60]})
-        print("SELECTS:", json.dumps(info)[:3000])
-        # choose Status=Pending, County=Maricopa if present
-        for s, want in zip(sels, [None]*len(sels)):
-            pass
-        for s in sels:
-            opts = await s.locator("option").all_inner_texts()
-            if any(o.strip().lower() == "pending" for o in opts):
-                await s.select_option(label=[o for o in opts if o.strip().lower() == "pending"][0])
-            if any("maricopa" in o.lower() for o in opts):
-                await s.select_option(label=[o for o in opts if "maricopa" in o.lower()][0])
-        btn = frame.get_by_role("button", name=re.compile("search", re.I))
-        await btn.first.click()
-        await pg.wait_for_timeout(8000)
-        # grab any tables / result rows
-        tables = await frame.locator("table").all()
-        rows = []
-        for t in tables:
-            for tr in await t.locator("tr").all():
-                cells = await tr.locator("th,td").all_inner_texts()
-                if cells: rows.append([c.strip() for c in cells])
-        print(f"TABLES: {len(tables)} ROWS: {len(rows)}")
-        for r in rows[:15]: print("  ", r)
-        if not rows:
-            txt = await frame.locator("body").inner_text()
-            print("BODY TEXT:", txt[:2500])
-        OUT.parent.mkdir(exist_ok=True); OUT.write_text(json.dumps(rows, indent=1))
+                allrows[typ] = await run_one(frame, pg, typ)
+            except Exception as ex:
+                print(f"TYPE {typ} error: {ex}")
+            await pg.goto(URL, wait_until="networkidle", timeout=90000)
+            frame = await app_frame(pg)
+        OUT.parent.mkdir(exist_ok=True); OUT.write_text(json.dumps(allrows, indent=1))
         await b.close()
 
 asyncio.run(main())

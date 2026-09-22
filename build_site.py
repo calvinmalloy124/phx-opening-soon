@@ -148,13 +148,13 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 </style></head><body><div class="wrap">
 <header><a class="logo" href="/">Liquor License Leads</a><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get the daily alert \u2192</a></header>
 
-<h1>Know about every new restaurant and bar in the Valley 30\u201390 days before it opens.</h1>
-<p class="sub">Every weekday morning: each new liquor-license filing in Phoenix, Scottsdale and Mesa, with the applicant's name, phone and email pulled from the public record. Built for the people who sell to restaurants.</p>
+<h1>Know about every new restaurant and bar in Arizona 30\u201390 days before it opens.</h1>
+<p class="sub">Every weekday morning: each new liquor-license application accepted by the State of Arizona, with the address, the applicant, and phone, email, Instagram and website wherever the public record and the web have them. Built for the people who sell to restaurants.</p>
 <p><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Start for $29/month \u2192</a> &nbsp; <span class="muted small">Cancel anytime. Reply to any email and a person answers.</span></p>
 <p class="muted"><b>Day one isn't empty.</b> Your first email is the entire current board: every active filing from the last 45 days ({len(venues) + _week_new} venues and {len(transfers) + _week_own} ownership changes right now) with full contact details, so you can work last month's openings too.</p>
 
 <div class="grid" style="margin-top:32px">
-<div class="card"><div class="stat">{len(venues) + _week_new}</div><div class="muted">restaurants &amp; bars pending right now (every filing in Phoenix, Scottsdale &amp; Mesa)</div></div>
+<div class="card"><div class="stat">{len(venues) + _week_new}</div><div class="muted">restaurants &amp; bars pending right now, statewide</div></div>
 <div class="card"><div class="stat">{_week_new}</div><div class="muted">new filings in the last 7 days</div></div>
 <div class="card"><div class="stat">{_week_own}</div><div class="muted">ownership changes this week</div></div>
 </div>
@@ -176,13 +176,14 @@ footer{{margin-top:60px;color:var(--muted);font-size:.85rem}}
 
 <h2>Pricing</h2>
 <div class="grid">
-<div class="card"><div class="price">$29<span class="muted small">/mo</span></div><b>Vendor Alert</b><ul><li>Every weekday morning</li><li>Phoenix, Scottsdale &amp; Mesa (more cities coming)</li><li>Address, applicant, phone, email, link to the record</li><li>Ownership changes flagged</li><li>Full 45-day backlog on day one</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></div>
+<div class="card"><div class="price">$29<span class="muted small">/mo</span></div><b>Phoenix Metro</b><ul><li>Every weekday morning</li><li>All of Maricopa County: Phoenix, Scottsdale, Mesa, Tempe, Chandler, Gilbert, Glendale, Peoria, Goodyear and more</li><li>Address, applicant, phone and email where the record has them, Instagram and website when found</li><li>Ownership changes flagged</li><li>Full 45-day backlog on day one</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Subscribe \u2192</a></div>
+<div class="card"><div class="price">$79<span class="muted small">/mo</span></div><b>Arizona Statewide</b><ul><li>Everything in Phoenix Metro</li><li>Plus all 15 counties: Tucson, Flagstaff, Sedona, Yuma, Prescott, Lake Havasu and every town in between</li><li>100+ new filings a month</li></ul><a class="btn" href="https://phxopeningsoon.beehiiv.com/upgrade" rel="noopener">Get every Arizona filing \u2192</a></div>
 <div class="card" id="free"><div class="price">Free</div><b>Thursday roundup</b><ul><li>This week's new venues, names and cities</li><li>For locals who want to know what's coming</li></ul><div class="embed"><script async src="https://subscribe-forms.beehiiv.com/v3/loader.js" data-beehiiv-form="88ab1535-52a2-4a24-947a-40848878c015"></script></div></div>
 <div class="card"><div class="price">Teams</div><b>Data licensing</b><ul><li>Multi-market, CSV/API delivery</li><li>Regional and national sales teams</li></ul><a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a></div>
 </div>
 
 <h2>Where the data comes from</h2>
-<p class="muted">City of Phoenix liquor license applications, Scottsdale City Council agendas and Mesa City Council filings, read every morning. Contact details come from the Arizona Department of Liquor Licenses and Control report attached to each application. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">Phoenix board</a> (the 10 most recent; subscribers get every filing with contacts the morning it appears).</p>
+<p class="muted">The Arizona Department of Liquor Licenses and Control pending-applications list (every county, every morning), plus City of Phoenix, Scottsdale and Mesa filings for earlier notice and contact details. All public records under A.R.S. Title 4. Browse the <a href="/phoenix/">board</a> (the 10 most recent; subscribers get every filing with contacts the morning it appears).</p>
 
 <footer>Liquor License Leads \u00b7 Phoenix, AZ \u00b7 <a href="mailto:hello@liquorlicenseleads.com">hello@liquorlicenseleads.com</a> \u00b7 Not affiliated with any city or the State of Arizona.</footer>
 </div></body></html>"""

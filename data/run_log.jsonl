@@ -40,3 +40,5 @@
 {"ts": "2026-09-21T18:47:51+00:00", "live": 105, "new": 0, "total_known": 115, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 1.6}
 {"ts": "2026-09-22T04:00:29+00:00", "live": 105, "new": 0, "total_known": 331, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 4.2}
 {"ts": "2026-09-22T04:00:34+00:00", "live": 105, "new": 0, "total_known": 331, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 1.7}
+{"ts": "2026-09-22T14:28:13+00:00", "live": 105, "new": 0, "total_known": 333, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 4.3}
+{"ts": "2026-09-22T14:28:17+00:00", "live": 105, "new": 0, "total_known": 333, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 1.9}

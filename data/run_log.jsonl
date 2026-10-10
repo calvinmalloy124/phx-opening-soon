@@ -76,3 +76,5 @@
 {"ts": "2026-10-08T19:57:28+00:00", "live": 70, "new": 0, "total_known": 462, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": ["district 5: parsed 0 records (page format changed?)"], "secs": 1.9}
 {"ts": "2026-10-09T19:33:05+00:00", "live": 61, "new": 1, "total_known": 466, "scottsdale_agendas_parsed": 0, "new_venues": 1, "errors": ["district 5: parsed 0 records (page format changed?)"], "secs": 4.2}
 {"ts": "2026-10-09T19:33:09+00:00", "live": 61, "new": 0, "total_known": 466, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": ["district 5: parsed 0 records (page format changed?)"], "secs": 2.5}
+{"ts": "2026-10-10T18:35:33+00:00", "live": 62, "new": 4, "total_known": 475, "scottsdale_agendas_parsed": 1, "new_venues": 2, "errors": ["district 5: parsed 0 records (page format changed?)"], "secs": 4.6}
+{"ts": "2026-10-10T18:35:37+00:00", "live": 62, "new": 0, "total_known": 475, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": ["district 5: parsed 0 records (page format changed?)"], "secs": 1.8}

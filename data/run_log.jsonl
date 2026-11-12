@@ -142,3 +142,5 @@
 {"ts": "2026-11-10T20:49:46+00:00", "live": 63, "new": 0, "total_known": 633, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 1.8}
 {"ts": "2026-11-11T21:25:25+00:00", "live": 63, "new": 0, "total_known": 638, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 4.1}
 {"ts": "2026-11-11T21:25:29+00:00", "live": 63, "new": 0, "total_known": 638, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": [], "secs": 1.9}
+{"ts": "2026-11-12T21:28:42+00:00", "live": 62, "new": 2, "total_known": 643, "scottsdale_agendas_parsed": 0, "new_venues": 2, "errors": ["district 6: parsed 0 records (page format changed?)", "district 7: parsed 0 records (page format changed?)"], "secs": 3.4}
+{"ts": "2026-11-12T21:28:46+00:00", "live": 62, "new": 0, "total_known": 643, "scottsdale_agendas_parsed": 0, "new_venues": 0, "errors": ["district 6: parsed 0 records (page format changed?)", "district 7: parsed 0 records (page format changed?)"], "secs": 0.7}
